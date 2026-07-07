@@ -13,6 +13,7 @@ export function ProductBrowser({ onSelectProduct }: { onSelectProduct: (product:
   const { t } = useTranslation();
   const [mode, setMode] = useState<BrowseMode>("folder");
   const [viewMode, setViewMode] = useState<ViewMode>("grid");
+  const [showOutOfStock, setShowOutOfStock] = useState(false);
 
   const MODES: Array<{ key: BrowseMode; labelKey: string }> = [
     { key: "folder", labelKey: "pos.modeFolder" },
@@ -22,7 +23,7 @@ export function ProductBrowser({ onSelectProduct }: { onSelectProduct: (product:
 
   return (
     <div>
-      <div className="mb-4 flex items-center justify-between gap-2">
+      <div className="mb-3 flex items-center justify-between gap-2">
         <div className="flex gap-1 rounded border border-ruby-700 p-0.5">
           {MODES.map((option) => (
             <button
@@ -57,8 +58,31 @@ export function ProductBrowser({ onSelectProduct }: { onSelectProduct: (product:
         )}
       </div>
 
-      {mode === "folder" && <FolderProductBrowser viewMode={viewMode} onSelectProduct={onSelectProduct} />}
-      {mode === "flat" && <FlatProductBrowser viewMode={viewMode} onSelectProduct={onSelectProduct} />}
+      {mode !== "scan" && (
+        <label className="mb-3 flex items-center gap-2 text-xs text-blush-100/70">
+          <input
+            type="checkbox"
+            checked={showOutOfStock}
+            onChange={(event) => setShowOutOfStock(event.target.checked)}
+          />
+          {t("pos.showOutOfStock")}
+        </label>
+      )}
+
+      {mode === "folder" && (
+        <FolderProductBrowser
+          viewMode={viewMode}
+          showOutOfStock={showOutOfStock}
+          onSelectProduct={onSelectProduct}
+        />
+      )}
+      {mode === "flat" && (
+        <FlatProductBrowser
+          viewMode={viewMode}
+          showOutOfStock={showOutOfStock}
+          onSelectProduct={onSelectProduct}
+        />
+      )}
       {mode === "scan" && <SkuScanInput viewMode={viewMode} onSelectProduct={onSelectProduct} />}
     </div>
   );

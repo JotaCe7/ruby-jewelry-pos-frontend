@@ -13,9 +13,11 @@ import { sortOptionToOrdering } from "./types";
 
 export function FolderProductBrowser({
   viewMode,
+  showOutOfStock,
   onSelectProduct,
 }: {
   viewMode: ViewMode;
+  showOutOfStock: boolean;
   onSelectProduct: (product: ProductEntry) => void;
 }) {
   const { t } = useTranslation();
@@ -38,9 +40,14 @@ export function FolderProductBrowser({
   });
 
   const { data: products } = useQuery({
-    queryKey: ["pos-products", "folder", subcategoryId, sort],
+    queryKey: ["pos-products", "folder", subcategoryId, sort, showOutOfStock],
     queryFn: () =>
-      productsApi.list({ subcategory: subcategoryId!, ordering: sortOptionToOrdering(sort) }),
+      productsApi.list({
+        subcategory: subcategoryId!,
+        ordering: sortOptionToOrdering(sort),
+        is_active: "true",
+        ...(!showOutOfStock && { in_stock: "true" }),
+      }),
     enabled: !!subcategoryId,
   });
 

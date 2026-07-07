@@ -161,6 +161,44 @@ export interface SaleWritePayload {
   lines: SaleLineInput[];
 }
 
+export interface DraftSaleLineEntry {
+  id: number;
+  product: number;
+  product_detail: ProductEntry;
+  movement_type: MovementType;
+  quantity: number;
+  unit_price: string;
+  discount: string;
+  payment_method: number | null;
+  combo_key: string;
+  combo_discount_total: string | null;
+}
+
+export interface DraftSaleEntry {
+  id: number;
+  date: string;
+  customer: number | null;
+  customer_name: string | null;
+  lines: DraftSaleLineEntry[];
+}
+
+export interface DraftSaleLineWritePayload {
+  product: number;
+  movement_type: MovementType;
+  quantity: number;
+  unit_price: string;
+  discount: string;
+  payment_method: number | null;
+  combo_key: string;
+  combo_discount_total: string | null;
+}
+
+export interface DraftSaleWritePayload {
+  date: string;
+  customer: number | null;
+  lines: DraftSaleLineWritePayload[];
+}
+
 export interface SaleLineItem {
   id: number;
   product: number;

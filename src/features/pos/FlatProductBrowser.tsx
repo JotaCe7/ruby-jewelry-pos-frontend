@@ -6,6 +6,7 @@ import { productCategoriesApi, productSubcategoriesApi } from "../../api/catalog
 import { suppliersApi } from "../../api/contacts";
 import { productsApi } from "../../api/inventory";
 import type { ProductEntry } from "../../api/types";
+import { useAuth } from "../auth/AuthContext";
 import { MultiSelectChips } from "./MultiSelectChips";
 import { ProductResults, type ViewMode } from "./ProductResults";
 import { SortMenu } from "./SortMenu";
@@ -14,12 +15,16 @@ import { sortOptionToOrdering } from "./types";
 
 export function FlatProductBrowser({
   viewMode,
+  showOutOfStock,
   onSelectProduct,
 }: {
   viewMode: ViewMode;
+  showOutOfStock: boolean;
   onSelectProduct: (product: ProductEntry) => void;
 }) {
   const { t } = useTranslation();
+  const { currentUser } = useAuth();
+  const isAdmin = currentUser?.isAdmin ?? false;
   const [categoryIds, setCategoryIds] = useState<number[]>([]);
   const [subcategoryIds, setSubcategoryIds] = useState<number[]>([]);
   const [supplierIds, setSupplierIds] = useState<number[]>([]);
@@ -34,20 +39,28 @@ export function FlatProductBrowser({
     queryKey: ["product-subcategories", "all"],
     queryFn: () => productSubcategoriesApi.list(),
   });
-  const { data: suppliers } = useQuery({ queryKey: ["suppliers"], queryFn: () => suppliersApi.list() });
+  // Suppliers are Admin-only on the backend — a Vendedor doesn't get this
+  // filter (purchasing/business-relationship data, not needed at the till).
+  const { data: suppliers } = useQuery({
+    queryKey: ["suppliers"],
+    queryFn: () => suppliersApi.list(),
+    enabled: isAdmin,
+  });
 
   const visibleSubcategories = categoryIds.length
     ? subcategories?.filter((s) => categoryIds.includes(s.category))
     : subcategories;
 
   const { data: products, isLoading } = useQuery({
-    queryKey: ["pos-products", "flat", categoryIds, subcategoryIds, supplierIds, sort],
+    queryKey: ["pos-products", "flat", categoryIds, subcategoryIds, supplierIds, sort, showOutOfStock],
     queryFn: () =>
       productsApi.list({
         ...(categoryIds.length && { category: categoryIds.join(",") }),
         ...(subcategoryIds.length && { subcategory: subcategoryIds.join(",") }),
         ...(supplierIds.length && { supplier: supplierIds.join(",") }),
         ordering: sortOptionToOrdering(sort),
+        is_active: "true",
+        ...(!showOutOfStock && { in_stock: "true" }),
       }),
   });
 
@@ -84,12 +97,14 @@ export function FlatProductBrowser({
             selectedIds={subcategoryIds}
             onChange={setSubcategoryIds}
           />
-          <MultiSelectChips
-            label={t("finance.supplier")}
-            items={suppliers ?? []}
-            selectedIds={supplierIds}
-            onChange={setSupplierIds}
-          />
+          {isAdmin && (
+            <MultiSelectChips
+              label={t("finance.supplier")}
+              items={suppliers ?? []}
+              selectedIds={supplierIds}
+              onChange={setSupplierIds}
+            />
+          )}
         </div>
       )}
 

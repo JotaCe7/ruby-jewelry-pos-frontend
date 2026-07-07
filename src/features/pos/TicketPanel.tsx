@@ -27,6 +27,7 @@ export function TicketPanel({
   onPaymentMethodChange,
   onSubmit,
   isSubmitting,
+  onClearTicket,
 }: {
   lines: DraftLine[];
   onUpdateLine: (key: string, changes: Partial<DraftLine>) => void;
@@ -39,6 +40,7 @@ export function TicketPanel({
   onPaymentMethodChange: (id: number) => void;
   onSubmit: () => void;
   isSubmitting: boolean;
+  onClearTicket: () => void;
 }) {
   const { t } = useTranslation();
   const { data: customers } = useQuery({ queryKey: ["customers"], queryFn: () => customersApi.list() });
@@ -205,6 +207,15 @@ export function TicketPanel({
 
   return (
     <div className="flex h-full flex-col">
+      <div className="mb-2 flex items-center justify-between">
+        <h2 className="text-sm font-semibold text-blush-200">{t("pos.ticket")}</h2>
+        {lines.length > 0 && (
+          <button className="text-xs text-blush-100/60 hover:text-red-400" onClick={onClearTicket}>
+            {t("pos.clearTicket")}
+          </button>
+        )}
+      </div>
+
       <div className="mb-3 grid grid-cols-2 gap-2">
         <div>
           <label className="mb-1 block text-xs text-blush-100/60">{t("finance.date")}</label>

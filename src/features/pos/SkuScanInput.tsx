@@ -24,7 +24,7 @@ export function SkuScanInput({
 
   const { data: matches, isFetching } = useQuery({
     queryKey: ["pos-products", "sku", debouncedValue],
-    queryFn: () => productsApi.list({ sku: debouncedValue }),
+    queryFn: () => productsApi.list({ sku: debouncedValue, is_active: "true" }),
     enabled: debouncedValue.length > 0,
   });
 

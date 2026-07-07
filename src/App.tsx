@@ -1,4 +1,4 @@
-import { NavLink, Route, Routes } from "react-router-dom";
+import { Navigate, NavLink, Route, Routes } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 
 import { AuthProvider, useAuth } from "./features/auth/AuthContext";
@@ -15,18 +15,32 @@ function ModulePlaceholder({ titleKey }: { titleKey: string }) {
   return <h1 className="text-2xl font-semibold text-blush-100">{t(titleKey)}</h1>;
 }
 
+const ADMIN_NAV_ITEMS: Array<{ to: string; labelKey: string }> = [
+  { to: "/", labelKey: "nav.dashboard" },
+  { to: "/catalogs", labelKey: "nav.catalogs" },
+  { to: "/contacts", labelKey: "nav.contacts" },
+  { to: "/finance", labelKey: "nav.finance" },
+  { to: "/inventory", labelKey: "nav.inventory" },
+  { to: "/pos", labelKey: "nav.pos" },
+];
+
+// A Vendedor only ever needs two destinations — a full tab row would just
+// compete for space with the POS screen they live in all day.
+const SELLER_NAV_ITEMS: Array<{ to: string; labelKey: string }> = [
+  { to: "/pos", labelKey: "nav.pos" },
+  { to: "/inventory", labelKey: "nav.inventory" },
+];
+
 function AppShell() {
   const { t } = useTranslation();
-  const { logout } = useAuth();
+  const { logout, currentUser } = useAuth();
 
-  const navItems: Array<{ to: string; labelKey: string }> = [
-    { to: "/", labelKey: "nav.dashboard" },
-    { to: "/catalogs", labelKey: "nav.catalogs" },
-    { to: "/contacts", labelKey: "nav.contacts" },
-    { to: "/finance", labelKey: "nav.finance" },
-    { to: "/inventory", labelKey: "nav.inventory" },
-    { to: "/pos", labelKey: "nav.pos" },
-  ];
+  if (!currentUser) {
+    return <div className="min-h-screen bg-ruby-950" />;
+  }
+
+  const isAdmin = currentUser.isAdmin;
+  const navItems = isAdmin ? ADMIN_NAV_ITEMS : SELLER_NAV_ITEMS;
 
   return (
     <div className="min-h-screen bg-ruby-950 text-blush-100">
@@ -37,7 +51,7 @@ function AppShell() {
             {t("nav.signOut")}
           </button>
         </div>
-        <nav className="mt-3 flex gap-4 text-sm">
+        <nav className={`flex gap-4 text-sm ${isAdmin ? "mt-3" : "mt-2"}`}>
           {navItems.map((item) => (
             <NavLink
               key={item.to}
@@ -53,12 +67,15 @@ function AppShell() {
         </nav>
       </header>
 
-      <main className="p-6">
+      <main className={isAdmin ? "p-6" : "p-3"}>
         <Routes>
-          <Route path="/" element={<ModulePlaceholder titleKey="nav.dashboard" />} />
-          <Route path="/catalogs/*" element={<CatalogsPage />} />
-          <Route path="/contacts/*" element={<ContactsPage />} />
-          <Route path="/finance" element={<ExpensesPage />} />
+          <Route
+            path="/"
+            element={isAdmin ? <ModulePlaceholder titleKey="nav.dashboard" /> : <Navigate to="/pos" replace />}
+          />
+          {isAdmin && <Route path="/catalogs/*" element={<CatalogsPage />} />}
+          {isAdmin && <Route path="/contacts/*" element={<ContactsPage />} />}
+          {isAdmin && <Route path="/finance" element={<ExpensesPage />} />}
           <Route path="/inventory/*" element={<InventoryPage />} />
           <Route path="/pos" element={<PosPage />} />
         </Routes>

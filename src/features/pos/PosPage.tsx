@@ -1,20 +1,58 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 
 import { paymentMethodsApi } from "../../api/catalogs";
 import { customersApi } from "../../api/contacts";
-import { salesApi } from "../../api/pos";
-import type { ProductEntry, SaleWritePayload } from "../../api/types";
+import { discardDraft, fetchDraft, finalizeDraft, saveDraft } from "../../api/pos";
+import type {
+  DraftSaleLineEntry,
+  DraftSaleLineWritePayload,
+  ProductEntry,
+} from "../../api/types";
 import { ProductBrowser } from "./ProductBrowser";
 import { TicketPanel } from "./TicketPanel";
 import type { DraftLine } from "./types";
 
 const today = () => new Date().toISOString().slice(0, 10);
 
+function lineFromServer(line: DraftSaleLineEntry): DraftLine {
+  return {
+    key: `line-${line.id}`,
+    product: line.product_detail,
+    movementType: line.movement_type,
+    quantity: line.quantity,
+    unitPrice: line.unit_price,
+    useTierPrice: true,
+    discount: line.discount,
+    comboKey: line.combo_key || null,
+  };
+}
+
+function linesToPayload(lines: DraftLine[], paymentMethodId: number | null): DraftSaleLineWritePayload[] {
+  return lines.map((line) => ({
+    product: line.product.id,
+    movement_type: line.movementType,
+    quantity: line.quantity,
+    unit_price: line.unitPrice,
+    discount: line.comboKey ? "0.00" : line.discount,
+    payment_method: line.movementType === "SALE" ? paymentMethodId : null,
+    combo_key: line.comboKey ?? "",
+    combo_discount_total: line.comboKey ? line.discount : null,
+  }));
+}
+
 export function PosPage() {
   const { t } = useTranslation();
   const queryClient = useQueryClient();
+
+  // The ticket is persisted server-side (one draft per logged-in user) so
+  // a dead phone or switching devices mid-sale doesn't lose it — see
+  // project memory for why this replaced an earlier localStorage version.
+  const { data: draft, isLoading: isDraftLoading } = useQuery({
+    queryKey: ["pos-draft"],
+    queryFn: fetchDraft,
+  });
 
   const [lines, setLines] = useState<DraftLine[]>([]);
   const [date, setDate] = useState(today());
@@ -22,9 +60,20 @@ export function PosPage() {
   const [paymentMethodId, setPaymentMethodId] = useState<number | null>(null);
   const [activePanel, setActivePanel] = useState<"browse" | "ticket">("browse");
 
+  const hasHydrated = useRef(false);
+  useEffect(() => {
+    if (!draft || hasHydrated.current) return;
+    hasHydrated.current = true;
+    setLines(draft.lines.map(lineFromServer));
+    setDate(draft.date);
+    setCustomerId(draft.customer);
+    const firstSaleLine = draft.lines.find((l) => l.movement_type === "SALE" && l.payment_method);
+    if (firstSaleLine) setPaymentMethodId(firstSaleLine.payment_method);
+  }, [draft]);
+
   const { data: customers } = useQuery({ queryKey: ["customers"], queryFn: () => customersApi.list() });
   useEffect(() => {
-    if (customerId === null && customers?.length) {
+    if (hasHydrated.current && customerId === null && customers?.length) {
       const walkIn = customers.find((c) => c.name === "Público General") ?? customers[0];
       setCustomerId(walkIn.id);
     }
@@ -35,17 +84,36 @@ export function PosPage() {
     queryFn: () => paymentMethodsApi.list(),
   });
   useEffect(() => {
-    if (paymentMethodId === null && paymentMethods?.length) {
+    if (hasHydrated.current && paymentMethodId === null && paymentMethods?.length) {
       const cash = paymentMethods.find((m) => m.is_cash) ?? paymentMethods[0];
       setPaymentMethodId(cash.id);
     }
   }, [paymentMethods, paymentMethodId]);
 
+  // Debounced autosave: skip the very first hydration render (nothing
+  // changed yet) and coalesce rapid edits into one PATCH instead of one
+  // per keystroke.
+  const saveTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
+  useEffect(() => {
+    if (!hasHydrated.current) return;
+    if (saveTimeout.current) clearTimeout(saveTimeout.current);
+    saveTimeout.current = setTimeout(() => {
+      saveDraft({
+        date,
+        customer: customerId,
+        lines: linesToPayload(lines, paymentMethodId),
+      });
+    }, 600);
+    return () => {
+      if (saveTimeout.current) clearTimeout(saveTimeout.current);
+    };
+  }, [lines, date, customerId, paymentMethodId]);
+
   function addProduct(product: ProductEntry) {
     setLines((current) => [
       ...current,
       {
-        key: `${product.id}-${Date.now()}`,
+        key: `new-${product.id}-${current.length}`,
         product,
         movementType: "SALE",
         quantity: 1,
@@ -65,31 +133,33 @@ export function PosPage() {
     setLines((current) => current.filter((line) => line.key !== key));
   }
 
-  const createSaleMutation = useMutation({
-    mutationFn: () => salesApi.create(buildPayload()),
+  function clearTicket() {
+    if (lines.length === 0) return;
+    if (!confirm(t("pos.confirmClearTicket"))) return;
+    if (saveTimeout.current) clearTimeout(saveTimeout.current);
+    setLines([]);
+    discardDraft();
+  }
+
+  const finalizeMutation = useMutation({
+    mutationFn: async () => {
+      if (saveTimeout.current) clearTimeout(saveTimeout.current);
+      // Make sure the latest edits are saved before finalizing — the
+      // debounced autosave might not have fired yet.
+      await saveDraft({ date, customer: customerId, lines: linesToPayload(lines, paymentMethodId) });
+      return finalizeDraft();
+    },
     onSuccess: () => {
       setLines([]);
       setActivePanel("browse");
       queryClient.invalidateQueries({ queryKey: ["pos-products"] });
       queryClient.invalidateQueries({ queryKey: ["products"] });
+      queryClient.invalidateQueries({ queryKey: ["pos-draft"] });
     },
   });
 
-  function buildPayload(): SaleWritePayload {
-    return {
-      date,
-      customer: customerId,
-      lines: lines.map((line) => ({
-        product: line.product.id,
-        movement_type: line.movementType,
-        quantity: line.quantity,
-        unit_price: line.unitPrice,
-        discount: line.comboKey ? undefined : line.discount,
-        payment_method: line.movementType === "SALE" ? paymentMethodId : null,
-        combo_key: line.comboKey ?? undefined,
-        combo_discount_total: line.comboKey ? line.discount : undefined,
-      })),
-    };
+  if (isDraftLoading) {
+    return <p className="text-blush-100/70">{t("common.loading")}</p>;
   }
 
   return (
@@ -111,8 +181,9 @@ export function PosPage() {
             onCustomerChange={setCustomerId}
             paymentMethodId={paymentMethodId}
             onPaymentMethodChange={setPaymentMethodId}
-            onSubmit={() => createSaleMutation.mutate()}
-            isSubmitting={createSaleMutation.isPending}
+            onSubmit={() => finalizeMutation.mutate()}
+            isSubmitting={finalizeMutation.isPending}
+            onClearTicket={clearTicket}
           />
         </div>
       </div>

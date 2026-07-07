@@ -117,6 +117,8 @@
     "filters": "Filtros",
     "scanPlaceholder": "Escanear o digitar SKU",
     "noSkuMatch": "No se encontró ningún producto con ese código",
+    "showOutOfStock": "Mostrar productos sin stock",
+    "soldOut": "Agotado",
     "sort": {
       "name": "Nombre",
       "price": "Precio",
@@ -137,6 +139,9 @@
     "emptyTicket": "El ticket está vacío. Agrega productos desde el buscador.",
     "total": "Total",
     "registerSale": "Registrar Venta",
-    "continueBrowsing": "Seguir buscando"
+    "continueBrowsing": "Seguir buscando",
+    "ticket": "Ticket",
+    "clearTicket": "Vaciar ticket",
+    "confirmClearTicket": "¿Seguro que deseas vaciar el ticket? Se perderán todas las líneas agregadas."
   }
 }
