@@ -26,33 +26,20 @@ const emptyForm: ProductWritePayload & { category?: number } = {
   min_stock: 0,
 };
 
-export function ProductsPage({ readOnly = false }: { readOnly?: boolean }) {
+export function ProductsPage() {
   const { t } = useTranslation();
   const queryClient = useQueryClient();
 
-  // Suppliers are Admin-only on the backend and only ever used by the
-  // create/edit form below, which never renders in read-only mode — skip
-  // the fetch entirely for a Vendedor to avoid a pointless 403.
   const { data: categories } = useQuery({
     queryKey: ["product-categories"],
     queryFn: () => productCategoriesApi.list(),
-    enabled: !readOnly,
   });
-  const { data: colors } = useQuery({
-    queryKey: ["colors"],
-    queryFn: () => colorVariantsApi.list(),
-    enabled: !readOnly,
-  });
+  const { data: colors } = useQuery({ queryKey: ["colors"], queryFn: () => colorVariantsApi.list() });
   const { data: presentations } = useQuery({
     queryKey: ["presentations"],
     queryFn: () => presentationsApi.list(),
-    enabled: !readOnly,
   });
-  const { data: suppliers } = useQuery({
-    queryKey: ["suppliers"],
-    queryFn: () => suppliersApi.list(),
-    enabled: !readOnly,
-  });
+  const { data: suppliers } = useQuery({ queryKey: ["suppliers"], queryFn: () => suppliersApi.list() });
   const { data: products, isLoading } = useQuery({
     queryKey: ["products"],
     queryFn: () => productsApi.list(),
@@ -125,7 +112,7 @@ export function ProductsPage({ readOnly = false }: { readOnly?: boolean }) {
     <section>
       <div className="mb-4 flex items-center justify-between">
         <h2 className="text-xl font-semibold text-blush-200">{t("inventory.products")}</h2>
-        {!readOnly && !isCreating && (
+        {!isCreating && (
           <button
             className="rounded bg-ruby-600 px-4 py-1.5 text-sm font-medium text-blush-100 hover:bg-ruby-500"
             onClick={() => {
@@ -139,7 +126,7 @@ export function ProductsPage({ readOnly = false }: { readOnly?: boolean }) {
         )}
       </div>
 
-      {!readOnly && isCreating && (
+      {isCreating && (
         <form
           className="mb-6 grid max-w-4xl grid-cols-2 gap-3 rounded border border-ruby-800 bg-ruby-900/50 p-4 sm:grid-cols-4"
           onSubmit={(event) => {
@@ -318,28 +305,18 @@ export function ProductsPage({ readOnly = false }: { readOnly?: boolean }) {
               <th className="py-1 text-right">{t("inventory.unitCost")}</th>
               <th className="py-1 text-right">{t("inventory.suggestedPrice")}</th>
               <th className="py-1 text-right">{t("inventory.currentStock")}</th>
-              {!readOnly && <th className="py-1 text-right">{t("common.actions")}</th>}
+              <th className="py-1 text-right">{t("common.actions")}</th>
             </tr>
           </thead>
           <tbody>
             {products?.map((product) => (
               <tr key={product.id} className="border-b border-ruby-800">
                 <td className="w-14 py-2">
-                  {readOnly ? (
-                    <div className="flex h-9 w-9 items-center justify-center overflow-hidden rounded bg-ruby-900 text-blush-100/40">
-                      {product.image ? (
-                        <img src={product.image} alt="" className="h-full w-full object-cover" />
-                      ) : (
-                        <span className="text-xs">{t("common.image")}</span>
-                      )}
-                    </div>
-                  ) : (
-                    <ImagePicker
-                      imageUrl={product.image}
-                      size={36}
-                      onSelect={(file) => uploadImageMutation.mutate({ id: product.id, file })}
-                    />
-                  )}
+                  <ImagePicker
+                    imageUrl={product.image}
+                    size={36}
+                    onSelect={(file) => uploadImageMutation.mutate({ id: product.id, file })}
+                  />
                 </td>
                 <td className="py-2">{product.sku}</td>
                 <td className="py-2">{product.base_model}</td>
@@ -352,24 +329,22 @@ export function ProductsPage({ readOnly = false }: { readOnly?: boolean }) {
                 <td className={`py-2 text-right ${product.needs_restock ? "font-semibold text-red-400" : ""}`}>
                   {product.current_stock}
                 </td>
-                {!readOnly && (
-                  <td className="py-2 text-right whitespace-nowrap">
-                    <button
-                      className="mr-3 text-blush-100/70 hover:text-blush-200"
-                      onClick={() => startEditing(product)}
-                    >
-                      {t("common.edit")}
-                    </button>
-                    <button
-                      className="text-red-400 hover:text-red-300"
-                      onClick={() => {
-                        if (confirm(t("common.confirmDelete"))) deleteMutation.mutate(product.id);
-                      }}
-                    >
-                      {t("common.delete")}
-                    </button>
-                  </td>
-                )}
+                <td className="py-2 text-right whitespace-nowrap">
+                  <button
+                    className="mr-3 text-blush-100/70 hover:text-blush-200"
+                    onClick={() => startEditing(product)}
+                  >
+                    {t("common.edit")}
+                  </button>
+                  <button
+                    className="text-red-400 hover:text-red-300"
+                    onClick={() => {
+                      if (confirm(t("common.confirmDelete"))) deleteMutation.mutate(product.id);
+                    }}
+                  >
+                    {t("common.delete")}
+                  </button>
+                </td>
               </tr>
             ))}
           </tbody>

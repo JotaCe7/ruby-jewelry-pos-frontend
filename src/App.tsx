@@ -24,11 +24,13 @@ const ADMIN_NAV_ITEMS: Array<{ to: string; labelKey: string }> = [
   { to: "/pos", labelKey: "nav.pos" },
 ];
 
-// A Vendedor only ever needs two destinations — a full tab row would just
-// compete for space with the POS screen they live in all day.
+// A Vendedor only ever needs one destination. Inventario is deliberately
+// left out — its catalog table shows unit_cost and supplier per product,
+// which is exactly the margin/business-relationship data kept out of
+// Finanzas/Proveedores for this role; the POS picker already covers the
+// legitimate need (stock while selling) without that leak.
 const SELLER_NAV_ITEMS: Array<{ to: string; labelKey: string }> = [
   { to: "/pos", labelKey: "nav.pos" },
-  { to: "/inventory", labelKey: "nav.inventory" },
 ];
 
 function AppShell() {
@@ -76,8 +78,9 @@ function AppShell() {
           {isAdmin && <Route path="/catalogs/*" element={<CatalogsPage />} />}
           {isAdmin && <Route path="/contacts/*" element={<ContactsPage />} />}
           {isAdmin && <Route path="/finance" element={<ExpensesPage />} />}
-          <Route path="/inventory/*" element={<InventoryPage />} />
+          {isAdmin && <Route path="/inventory/*" element={<InventoryPage />} />}
           <Route path="/pos" element={<PosPage />} />
+          {!isAdmin && <Route path="*" element={<Navigate to="/pos" replace />} />}
         </Routes>
       </main>
     </div>
