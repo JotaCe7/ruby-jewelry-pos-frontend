@@ -59,6 +59,83 @@ export interface ExpenseWritePayload {
   manual_exchange_rate?: string;
 }
 
+export interface PriceTierEntry {
+  id: number;
+  product: number;
+  min_quantity: number;
+  unit_price: string;
+}
+
+export interface ProductEntry {
+  id: number;
+  sku: string;
+  base_model: string;
+  subcategory: number;
+  subcategory_name: string;
+  category_name: string;
+  color: number | null;
+  color_name: string | null;
+  presentation: number | null;
+  presentation_name: string | null;
+  supplier: number | null;
+  supplier_name: string | null;
+  unit_cost: string;
+  suggested_price: string;
+  min_stock: number;
+  is_active: boolean;
+  current_stock: number;
+  inventory_value: string;
+  needs_restock: boolean;
+  price_tiers: PriceTierEntry[];
+}
+
+export interface ProductWritePayload {
+  sku?: string;
+  base_model: string;
+  subcategory: number;
+  color?: number | null;
+  presentation?: number | null;
+  supplier?: number | null;
+  suggested_price: string;
+  min_stock?: number;
+  is_active?: boolean;
+}
+
+export interface InventoryEntryEntry {
+  id: number;
+  date: string;
+  product: number;
+  product_sku: string;
+  quantity: number;
+  unit_cost: string | null;
+  notes: string;
+}
+
+export interface InventoryEntryWritePayload {
+  date: string;
+  product: number;
+  quantity: number;
+  unit_cost?: string | null;
+  notes?: string;
+}
+
+export interface InventoryAuditEntry {
+  id: number;
+  date: string;
+  product: number;
+  product_sku: string;
+  physical_count: number;
+  theoretical_stock_snapshot: number;
+  loss_adjustment: number;
+  loss_value: string;
+}
+
+export interface InventoryAuditWritePayload {
+  date: string;
+  product: number;
+  physical_count: number;
+}
+
 export interface PaginatedResponse<T> {
   count: number;
   next: string | null;

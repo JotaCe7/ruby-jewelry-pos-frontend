@@ -81,5 +81,28 @@
       "installments": "En Partes",
       "cashOnDelivery": "Contraentrega"
     }
+  },
+  "inventory": {
+    "products": "Catálogo de Productos",
+    "entries": "Entradas",
+    "audits": "Auditoría",
+    "baseModel": "Modelo Base",
+    "color": "Color",
+    "presentation": "Presentación",
+    "none": "Ninguno",
+    "unitCost": "Costo Unitario",
+    "suggestedPrice": "Precio Sugerido",
+    "minStock": "Stock Mínimo",
+    "currentStock": "Stock Actual",
+    "skuAutoHint": "Se genera automáticamente si lo dejas vacío",
+    "generateSku": "Generar",
+    "quantity": "Cantidad",
+    "entryUnitCost": "Costo de este lote",
+    "entryUnitCostHint": "Opcional — actualiza el costo promedio",
+    "notes": "Notas",
+    "theoreticalStock": "Stock Teórico",
+    "physicalCount": "Conteo Físico",
+    "lossAdjustment": "Ajuste",
+    "lossValue": "Pérdida Valorizada"
   }
 }
