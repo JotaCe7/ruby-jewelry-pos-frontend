@@ -1,32 +1,44 @@
-# React + TypeScript + Vite
+# Ruby Jewelry POS — Frontend
 
-This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
+React + Vite + TypeScript single-page app for Joyería Ruby's ERP/POS system. Consumes the API from [ruby-jewelry-pos](https://github.com/JotaCe7/ruby-jewelry-pos) (Django + DRF) over REST/JSON with JWT auth. The two projects are independent — this one has no server-side code of its own.
 
-Currently, two official plugins are available:
+## Stack
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+- React 19 + TypeScript, built with Vite
+- Tailwind CSS v4 — "Ruby Red" dark premium theme
+- React Router, TanStack Query
+- `react-i18next` — Spanish is the only shipped locale today, but every string goes through `t()` so more locales can be added later without touching component code
+- `axios` client with automatic JWT refresh (`src/api/client.ts`)
+- Chart.js (`react-chartjs-2` + `chartjs-plugin-datalabels`) for the dashboard
 
-## React Compiler
+## Getting started
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+1. Copy the environment template and point it at your running backend:
 
-## Expanding the Oxlint configuration
+   ```bash
+   cp .env.example .env
+   ```
 
-If you are developing a production application, we recommend enabling type-aware lint rules by installing `oxlint-tsgolint` and editing `.oxlintrc.json`:
+2. Install dependencies and start the dev server:
 
-```json
-{
-  "$schema": "./node_modules/oxlint/configuration_schema.json",
-  "plugins": ["react", "typescript", "oxc"],
-  "options": {
-    "typeAware": true
-  },
-  "rules": {
-    "react/rules-of-hooks": "error",
-    "react/only-export-components": ["warn", { "allowConstantExport": true }]
-  }
-}
+   ```bash
+   npm install
+   npm run dev
+   ```
+
+   The app runs at `http://localhost:5173/`. It expects the backend to be running at the URL in `VITE_API_BASE_URL` (defaults to `http://localhost:8000/api`).
+
+## Project layout
+
+```
+src/
+├── api/        # typed HTTP client per module (finance, inventory, pos, dashboard)
+├── features/   # one folder per business module (catalogs, contacts, finance, inventory, pos, dashboard)
+├── components/ # shared UI (inputs, tables, cards)
+├── locales/es/ # i18next translation files
+└── theme/      # Tailwind "Ruby Red" theme tokens
 ```
 
-See the [Oxlint rules documentation](https://oxc.rs/docs/guide/usage/linter/rules) for the full list of rules and categories.
+## Language conventions
+
+All code (identifiers, comments) is written in English. All user-facing text is Spanish content routed through `react-i18next` — never hardcode a string directly in JSX.
