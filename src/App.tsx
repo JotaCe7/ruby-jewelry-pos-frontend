@@ -6,6 +6,7 @@ import { LoginPage } from "./features/auth/LoginPage";
 import { RequireAuth } from "./features/auth/RequireAuth";
 import { CatalogsPage } from "./features/catalogs/CatalogsPage";
 import { ContactsPage } from "./features/contacts/ContactsPage";
+import { ExpensesPage } from "./features/finance/ExpensesPage";
 
 function ModulePlaceholder({ titleKey }: { titleKey: string }) {
   const { t } = useTranslation();
@@ -55,7 +56,7 @@ function AppShell() {
           <Route path="/" element={<ModulePlaceholder titleKey="nav.dashboard" />} />
           <Route path="/catalogs/*" element={<CatalogsPage />} />
           <Route path="/contacts/*" element={<ContactsPage />} />
-          <Route path="/finance" element={<ModulePlaceholder titleKey="nav.finance" />} />
+          <Route path="/finance" element={<ExpensesPage />} />
           <Route path="/inventory" element={<ModulePlaceholder titleKey="nav.inventory" />} />
           <Route path="/pos" element={<ModulePlaceholder titleKey="nav.pos" />} />
         </Routes>

@@ -27,7 +27,8 @@
     "deactivate": "Desactivar",
     "actions": "Acciones",
     "loading": "Cargando…",
-    "confirmDelete": "¿Seguro que deseas eliminar este registro?"
+    "confirmDelete": "¿Seguro que deseas eliminar este registro?",
+    "select": "Selecciona…"
   },
   "catalogs": {
     "expenseCategories": "Categorías de Gasto",
@@ -49,5 +50,36 @@
     "taxId": "RUC/DNI",
     "phone": "Teléfono",
     "email": "Correo"
+  },
+  "finance": {
+    "expenses": "Gastos",
+    "date": "Fecha",
+    "category": "Categoría",
+    "supplier": "Proveedor",
+    "noSupplier": "Sin proveedor específico",
+    "description": "Descripción",
+    "paymentMethod": "Método de Pago",
+    "paymentReference": "Referencia de Pago",
+    "originalAmount": "Monto Original",
+    "currency": "Moneda",
+    "exchangeRate": "Tipo de cambio",
+    "penEquivalent": "Monto Equivalente",
+    "fetchingRate": "Consultando tipo de cambio…",
+    "rateUnavailable": "No se pudo obtener el tipo de cambio para esta fecha.",
+    "manualRate": "Ingresa el tipo de cambio manualmente",
+    "receiptType": {
+      "label": "Tipo de Comprobante",
+      "none": "Ninguno",
+      "boleta": "Boleta",
+      "factura": "Factura",
+      "recibo": "Recibo"
+    },
+    "paymentStatus": {
+      "label": "Estado de Pago",
+      "prepaid": "Pagado por Adelantado",
+      "cashOnOrder": "Al Contado",
+      "installments": "En Partes",
+      "cashOnDelivery": "Contraentrega"
+    }
   }
 }
