@@ -8,6 +8,7 @@ import { CatalogsPage } from "./features/catalogs/CatalogsPage";
 import { ContactsPage } from "./features/contacts/ContactsPage";
 import { ExpensesPage } from "./features/finance/ExpensesPage";
 import { InventoryPage } from "./features/inventory/InventoryPage";
+import { PosPage } from "./features/pos/PosPage";
 
 function ModulePlaceholder({ titleKey }: { titleKey: string }) {
   const { t } = useTranslation();
@@ -59,7 +60,7 @@ function AppShell() {
           <Route path="/contacts/*" element={<ContactsPage />} />
           <Route path="/finance" element={<ExpensesPage />} />
           <Route path="/inventory/*" element={<InventoryPage />} />
-          <Route path="/pos" element={<ModulePlaceholder titleKey="nav.pos" />} />
+          <Route path="/pos" element={<PosPage />} />
         </Routes>
       </main>
     </div>

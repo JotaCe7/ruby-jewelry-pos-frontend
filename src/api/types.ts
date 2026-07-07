@@ -142,6 +142,49 @@ export interface InventoryAuditWritePayload {
   physical_count: number;
 }
 
+export type MovementType = "SALE" | "GIFT" | "DAMAGED";
+
+export interface SaleLineInput {
+  product: number;
+  movement_type: MovementType;
+  quantity: number;
+  unit_price: string;
+  discount?: string;
+  payment_method?: number | null;
+  combo_key?: string | null;
+  combo_discount_total?: string | null;
+}
+
+export interface SaleWritePayload {
+  date: string;
+  customer?: number | null;
+  lines: SaleLineInput[];
+}
+
+export interface SaleLineItem {
+  id: number;
+  product: number;
+  product_sku: string;
+  product_name: string;
+  movement_type: MovementType;
+  quantity: number;
+  unit_price_snapshot: string;
+  discount_applied: string;
+  final_price: string;
+  payment_method: number | null;
+  payment_method_name: string | null;
+  combo_group: string | null;
+}
+
+export interface SaleEntry {
+  id: number;
+  date: string;
+  customer: number | null;
+  customer_name: string | null;
+  line_items: SaleLineItem[];
+  total: string;
+}
+
 export interface PaginatedResponse<T> {
   count: number;
   next: string | null;

@@ -106,5 +106,37 @@
     "physicalCount": "Conteo Físico",
     "lossAdjustment": "Ajuste",
     "lossValue": "Pérdida Valorizada"
+  },
+  "pos": {
+    "modeFolder": "Por Categoría",
+    "modeFlat": "Todos",
+    "modeScan": "Escanear",
+    "viewGrid": "Cuadrícula",
+    "viewList": "Lista",
+    "allCategories": "Categorías",
+    "filters": "Filtros",
+    "scanPlaceholder": "Escanear o digitar SKU",
+    "noSkuMatch": "No se encontró ningún producto con ese código",
+    "sort": {
+      "name": "Nombre",
+      "price": "Precio",
+      "stock": "Stock",
+      "cost": "Costo"
+    },
+    "movementSale": "Venta",
+    "movementGift": "Regalo / Cortesía",
+    "movementDamaged": "Dañado / Roto",
+    "wholesalePrice": "Precio por mayor",
+    "discount": "Descuento",
+    "addToCombo": "Agregar a combo",
+    "inCombo": "En combo",
+    "combo": "Combo",
+    "ungroup": "Separar",
+    "comboDiscountTotal": "Descuento total del combo",
+    "applyCombo": "Aplicar",
+    "emptyTicket": "El ticket está vacío. Agrega productos desde el buscador.",
+    "total": "Total",
+    "registerSale": "Registrar Venta",
+    "continueBrowsing": "Seguir buscando"
   }
 }
