@@ -1,0 +1,13 @@
+{
+  "app": {
+    "name": "Joyería Ruby"
+  },
+  "nav": {
+    "dashboard": "Panel",
+    "catalogs": "Catálogos",
+    "contacts": "Directorio",
+    "finance": "Finanzas",
+    "inventory": "Inventario",
+    "pos": "Punto de Venta"
+  }
+}

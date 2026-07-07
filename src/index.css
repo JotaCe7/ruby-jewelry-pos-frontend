@@ -1,0 +1,24 @@
+@import "tailwindcss";
+
+/*
+ * "Ruby Red" theme tokens, based on the brand logo: dark ruby background,
+ * pink/cream text and accents. The product commits to a single dark
+ * premium look rather than switching with the OS light/dark preference.
+ */
+@theme {
+  --color-ruby-950: #2b070d;
+  --color-ruby-900: #3d0c14;
+  --color-ruby-800: #5a1220;
+  --color-ruby-700: #7a1b2e;
+  --color-ruby-600: #9b2740;
+  --color-ruby-500: #c23557;
+  --color-blush-200: #f2c9c9;
+  --color-blush-100: #f8e3e3;
+}
+
+body {
+  margin: 0;
+  background-color: var(--color-ruby-950);
+  color: var(--color-blush-100);
+  font-family: system-ui, "Segoe UI", Roboto, sans-serif;
+}
