@@ -8,6 +8,46 @@
     "contacts": "Directorio",
     "finance": "Finanzas",
     "inventory": "Inventario",
-    "pos": "Punto de Venta"
+    "pos": "Punto de Venta",
+    "signOut": "Cerrar sesión"
+  },
+  "auth": {
+    "username": "Usuario",
+    "password": "Contraseña",
+    "signIn": "Iniciar sesión",
+    "invalidCredentials": "Usuario o contraseña incorrectos"
+  },
+  "common": {
+    "add": "Agregar",
+    "save": "Guardar",
+    "cancel": "Cancelar",
+    "edit": "Editar",
+    "delete": "Eliminar",
+    "activate": "Activar",
+    "deactivate": "Desactivar",
+    "actions": "Acciones",
+    "loading": "Cargando…",
+    "confirmDelete": "¿Seguro que deseas eliminar este registro?"
+  },
+  "catalogs": {
+    "expenseCategories": "Categorías de Gasto",
+    "paymentMethods": "Métodos de Pago",
+    "productCategories": "Categorías de Producto",
+    "productSubcategories": "Subcategorías de Producto",
+    "colors": "Colores / Variantes",
+    "presentations": "Presentaciones",
+    "newEntryPlaceholder": "Nombre del nuevo registro",
+    "selectCategory": "Selecciona categoría",
+    "filterByCategory": "Filtrar por categoría:",
+    "category": "Categoría",
+    "subcategoryName": "Nombre de la subcategoría"
+  },
+  "contacts": {
+    "suppliers": "Proveedores",
+    "customers": "Clientes",
+    "name": "Nombre",
+    "taxId": "RUC/DNI",
+    "phone": "Teléfono",
+    "email": "Correo"
   }
 }
