@@ -19,8 +19,7 @@ export function TicketPanel({
   lines,
   onUpdateLine,
   onRemoveLine,
-  date,
-  onDateChange,
+  processDate,
   customerId,
   onCustomerChange,
   paymentMethodId,
@@ -32,8 +31,7 @@ export function TicketPanel({
   lines: DraftLine[];
   onUpdateLine: (key: string, changes: Partial<DraftLine>) => void;
   onRemoveLine: (key: string) => void;
-  date: string;
-  onDateChange: (date: string) => void;
+  processDate: string;
   customerId: number | null;
   onCustomerChange: (id: number) => void;
   paymentMethodId: number | null;
@@ -218,13 +216,10 @@ export function TicketPanel({
 
       <div className="mb-3 grid grid-cols-2 gap-2">
         <div>
-          <label className="mb-1 block text-xs text-blush-100/60">{t("finance.date")}</label>
-          <input
-            type="date"
-            className={`${fieldClass} w-full`}
-            value={date}
-            onChange={(event) => onDateChange(event.target.value)}
-          />
+          {/* Not editable — every sale is dated to the global process date
+              at finalize time, never a client-supplied one. */}
+          <label className="mb-1 block text-xs text-blush-100/60">{t("register.processDate")}</label>
+          <p className={`${fieldClass} w-full`}>{processDate}</p>
         </div>
         <div>
           <label className="mb-1 block text-xs text-blush-100/60">{t("contacts.customers")}</label>

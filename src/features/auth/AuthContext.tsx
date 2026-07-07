@@ -3,6 +3,7 @@ import { createContext, useContext, useEffect, useState, type ReactNode } from "
 import { apiClient, tokenStorage } from "../../api/client";
 
 interface CurrentUser {
+  id: number;
   username: string;
   isAdmin: boolean;
 }
@@ -27,7 +28,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
     apiClient
       .get("/auth/me/")
-      .then(({ data }) => setCurrentUser({ username: data.username, isAdmin: data.is_admin }))
+      .then(({ data }) => setCurrentUser({ id: data.id, username: data.username, isAdmin: data.is_admin }))
       .catch(() => setCurrentUser(null));
   }, [isAuthenticated]);
 

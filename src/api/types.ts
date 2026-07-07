@@ -156,9 +156,12 @@ export interface SaleLineInput {
 }
 
 export interface SaleWritePayload {
-  date: string;
   customer?: number | null;
   lines: SaleLineInput[];
+  // Admin-only retroactive-attribution path: attribute this sale to another
+  // seller, confirmed with that seller's own login password.
+  seller_override?: number;
+  seller_password?: string;
 }
 
 export interface DraftSaleLineEntry {
@@ -228,4 +231,46 @@ export interface PaginatedResponse<T> {
   next: string | null;
   previous: string | null;
   results: T[];
+}
+
+export interface UserEntry {
+  id: number;
+  username: string;
+  is_admin: boolean;
+}
+
+export interface RegisterStatus {
+  is_open: boolean;
+  opened_at: string | null;
+  process_date: string;
+}
+
+export type ClosingType = "X" | "Z";
+export type ClosingMode = "PANTALLA" | "IMPRESORA";
+
+export interface ClosingTotals {
+  period_start: string;
+  period_end: string;
+  total_sales: string;
+  total_by_payment_method: Record<string, string>;
+  total_losses: string;
+  sale_count: number;
+}
+
+export interface RegisterClosingEntry extends ClosingTotals {
+  id: number;
+  seller: number;
+  seller_name: string;
+  closing_type: ClosingType;
+  closing_type_display: string;
+  process_date: string;
+  performed_by: number;
+  performed_by_name: string;
+  created_at: string;
+}
+
+export interface SetProcessDateResult {
+  process_date: string;
+  is_future: boolean;
+  has_prior_z: boolean;
 }

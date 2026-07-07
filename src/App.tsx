@@ -9,6 +9,7 @@ import { ContactsPage } from "./features/contacts/ContactsPage";
 import { ExpensesPage } from "./features/finance/ExpensesPage";
 import { InventoryPage } from "./features/inventory/InventoryPage";
 import { PosPage } from "./features/pos/PosPage";
+import { RegisterAdminPage } from "./features/register/RegisterAdminPage";
 
 function ModulePlaceholder({ titleKey }: { titleKey: string }) {
   const { t } = useTranslation();
@@ -22,6 +23,7 @@ const ADMIN_NAV_ITEMS: Array<{ to: string; labelKey: string }> = [
   { to: "/finance", labelKey: "nav.finance" },
   { to: "/inventory", labelKey: "nav.inventory" },
   { to: "/pos", labelKey: "nav.pos" },
+  { to: "/register", labelKey: "nav.closings" },
 ];
 
 // A Vendedor only ever needs one destination. Inventario is deliberately
@@ -79,6 +81,7 @@ function AppShell() {
           {isAdmin && <Route path="/contacts/*" element={<ContactsPage />} />}
           {isAdmin && <Route path="/finance" element={<ExpensesPage />} />}
           {isAdmin && <Route path="/inventory/*" element={<InventoryPage />} />}
+          {isAdmin && <Route path="/register" element={<RegisterAdminPage />} />}
           <Route path="/pos" element={<PosPage />} />
           {!isAdmin && <Route path="*" element={<Navigate to="/pos" replace />} />}
         </Routes>

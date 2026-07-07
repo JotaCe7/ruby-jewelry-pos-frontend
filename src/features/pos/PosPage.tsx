@@ -4,17 +4,17 @@ import { useTranslation } from "react-i18next";
 
 import { paymentMethodsApi } from "../../api/catalogs";
 import { customersApi } from "../../api/contacts";
-import { discardDraft, fetchDraft, finalizeDraft, saveDraft } from "../../api/pos";
+import { discardDraft, fetchDraft, fetchRegisterStatus, finalizeDraft, saveDraft } from "../../api/pos";
 import type {
   DraftSaleLineEntry,
   DraftSaleLineWritePayload,
   ProductEntry,
 } from "../../api/types";
+import { ClosingModal } from "./ClosingModal";
 import { ProductBrowser } from "./ProductBrowser";
+import { RegisterGate } from "./RegisterGate";
 import { TicketPanel } from "./TicketPanel";
 import type { DraftLine } from "./types";
-
-const today = () => new Date().toISOString().slice(0, 10);
 
 function lineFromServer(line: DraftSaleLineEntry): DraftLine {
   return {
@@ -46,16 +46,24 @@ export function PosPage() {
   const { t } = useTranslation();
   const queryClient = useQueryClient();
 
+  // A sale can only ever be created while the register is open, so the
+  // whole ticket UI stays gated behind RegisterGate until it is.
+  const { data: registerStatus, isLoading: isRegisterLoading } = useQuery({
+    queryKey: ["register-status"],
+    queryFn: fetchRegisterStatus,
+  });
+  const [isClosingModalOpen, setIsClosingModalOpen] = useState(false);
+
   // The ticket is persisted server-side (one draft per logged-in user) so
   // a dead phone or switching devices mid-sale doesn't lose it — see
   // project memory for why this replaced an earlier localStorage version.
   const { data: draft, isLoading: isDraftLoading } = useQuery({
     queryKey: ["pos-draft"],
     queryFn: fetchDraft,
+    enabled: !!registerStatus?.is_open,
   });
 
   const [lines, setLines] = useState<DraftLine[]>([]);
-  const [date, setDate] = useState(today());
   const [customerId, setCustomerId] = useState<number | null>(null);
   const [paymentMethodId, setPaymentMethodId] = useState<number | null>(null);
   const [activePanel, setActivePanel] = useState<"browse" | "ticket">("browse");
@@ -65,7 +73,6 @@ export function PosPage() {
     if (!draft || hasHydrated.current) return;
     hasHydrated.current = true;
     setLines(draft.lines.map(lineFromServer));
-    setDate(draft.date);
     setCustomerId(draft.customer);
     const firstSaleLine = draft.lines.find((l) => l.movement_type === "SALE" && l.payment_method);
     if (firstSaleLine) setPaymentMethodId(firstSaleLine.payment_method);
@@ -95,11 +102,11 @@ export function PosPage() {
   // per keystroke.
   const saveTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
   useEffect(() => {
-    if (!hasHydrated.current) return;
+    if (!hasHydrated.current || !registerStatus) return;
     if (saveTimeout.current) clearTimeout(saveTimeout.current);
     saveTimeout.current = setTimeout(() => {
       saveDraft({
-        date,
+        date: registerStatus.process_date,
         customer: customerId,
         lines: linesToPayload(lines, paymentMethodId),
       });
@@ -107,7 +114,7 @@ export function PosPage() {
     return () => {
       if (saveTimeout.current) clearTimeout(saveTimeout.current);
     };
-  }, [lines, date, customerId, paymentMethodId]);
+  }, [lines, registerStatus, customerId, paymentMethodId]);
 
   function addProduct(product: ProductEntry) {
     setLines((current) => [
@@ -143,10 +150,15 @@ export function PosPage() {
 
   const finalizeMutation = useMutation({
     mutationFn: async () => {
+      if (!registerStatus) throw new Error("register status not loaded");
       if (saveTimeout.current) clearTimeout(saveTimeout.current);
       // Make sure the latest edits are saved before finalizing — the
       // debounced autosave might not have fired yet.
-      await saveDraft({ date, customer: customerId, lines: linesToPayload(lines, paymentMethodId) });
+      await saveDraft({
+        date: registerStatus.process_date,
+        customer: customerId,
+        lines: linesToPayload(lines, paymentMethodId),
+      });
       return finalizeDraft();
     },
     onSuccess: () => {
@@ -158,12 +170,36 @@ export function PosPage() {
     },
   });
 
+  if (isRegisterLoading) {
+    return <p className="text-blush-100/70">{t("common.loading")}</p>;
+  }
+
+  if (!registerStatus) {
+    return <p className="text-red-400">{t("register.statusError")}</p>;
+  }
+
+  if (!registerStatus.is_open) {
+    return <RegisterGate status={registerStatus} />;
+  }
+
   if (isDraftLoading) {
     return <p className="text-blush-100/70">{t("common.loading")}</p>;
   }
 
   return (
     <div>
+      <div className="mb-3 flex items-center justify-between text-xs text-blush-100/60">
+        <span>
+          {t("register.processDate")}: {registerStatus.process_date}
+        </span>
+        <button
+          className="rounded border border-ruby-700 px-3 py-1 text-blush-100/80 hover:text-blush-100"
+          onClick={() => setIsClosingModalOpen(true)}
+        >
+          {t("register.closeCash")}
+        </button>
+      </div>
+
       <div className="flex flex-col gap-4 md:flex-row">
         <div className={`${activePanel === "browse" ? "block" : "hidden"} max-h-[75vh] flex-1 overflow-y-auto md:block`}>
           <ProductBrowser onSelectProduct={addProduct} />
@@ -175,8 +211,7 @@ export function PosPage() {
             lines={lines}
             onUpdateLine={updateLine}
             onRemoveLine={removeLine}
-            date={date}
-            onDateChange={setDate}
+            processDate={registerStatus.process_date}
             customerId={customerId}
             onCustomerChange={setCustomerId}
             paymentMethodId={paymentMethodId}
@@ -194,6 +229,13 @@ export function PosPage() {
       >
         {activePanel === "browse" ? `🛒 ${lines.length}` : t("pos.continueBrowsing")}
       </button>
+
+      {isClosingModalOpen && (
+        <ClosingModal
+          onClose={() => setIsClosingModalOpen(false)}
+          onExecuted={() => queryClient.invalidateQueries({ queryKey: ["register-status"] })}
+        />
+      )}
     </div>
   );
 }
