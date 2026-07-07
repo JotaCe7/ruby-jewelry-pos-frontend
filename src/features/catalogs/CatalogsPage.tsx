@@ -6,9 +6,9 @@ import {
   expenseCategoriesApi,
   paymentMethodsApi,
   presentationsApi,
-  productCategoriesApi,
 } from "../../api/catalogs";
 import { NamedCatalogManager } from "../../components/NamedCatalogManager";
+import { ProductCategoriesPage } from "./ProductCategoriesPage";
 import { ProductSubcategoriesPage } from "./ProductSubcategoriesPage";
 
 const TABS = [
@@ -61,16 +61,7 @@ export function CatalogsPage() {
             />
           }
         />
-        <Route
-          path="product-categories"
-          element={
-            <NamedCatalogManager
-              title={t("catalogs.productCategories")}
-              api={productCategoriesApi}
-              queryKey="product-categories"
-            />
-          }
-        />
+        <Route path="product-categories" element={<ProductCategoriesPage />} />
         <Route path="product-subcategories" element={<ProductSubcategoriesPage />} />
         <Route
           path="colors"

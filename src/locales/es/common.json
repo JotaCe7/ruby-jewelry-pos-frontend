@@ -28,7 +28,9 @@
     "actions": "Acciones",
     "loading": "Cargando…",
     "confirmDelete": "¿Seguro que deseas eliminar este registro?",
-    "select": "Selecciona…"
+    "select": "Selecciona…",
+    "image": "Foto",
+    "changeImage": "Cambiar imagen"
   },
   "catalogs": {
     "expenseCategories": "Categorías de Gasto",

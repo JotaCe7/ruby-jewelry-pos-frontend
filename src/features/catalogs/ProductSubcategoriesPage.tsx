@@ -3,7 +3,9 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 
 import { productCategoriesApi, productSubcategoriesApi } from "../../api/catalogs";
+import { uploadImage } from "../../api/uploadImage";
 import type { ProductSubcategoryEntry } from "../../api/types";
+import { ImagePicker } from "../../components/ImagePicker";
 
 type SubcategoryForm = { name: string; category: number | ""; is_active: boolean };
 
@@ -60,6 +62,12 @@ export function ProductSubcategoriesPage() {
 
   const deleteMutation = useMutation({
     mutationFn: (id: number) => productSubcategoriesApi.remove(id),
+    onSuccess: invalidate,
+  });
+
+  const uploadImageMutation = useMutation({
+    mutationFn: ({ id, file }: { id: number; file: File }) =>
+      uploadImage("/catalogs/product-subcategories/", id, file),
     onSuccess: invalidate,
   });
 
@@ -150,7 +158,7 @@ export function ProductSubcategoriesPage() {
             {subcategories?.map((entry) =>
               editingId === entry.id ? (
                 <tr key={entry.id} className="border-b border-ruby-800">
-                  <td className="py-2" colSpan={2}>
+                  <td className="py-2" colSpan={3}>
                     <div className="flex items-end gap-2">
                       <CategorySelect
                         value={form.category}
@@ -173,6 +181,13 @@ export function ProductSubcategoriesPage() {
                 </tr>
               ) : (
                 <tr key={entry.id} className="border-b border-ruby-800">
+                  <td className="w-14 py-2">
+                    <ImagePicker
+                      imageUrl={entry.image}
+                      size={36}
+                      onSelect={(file) => uploadImageMutation.mutate({ id: entry.id, file })}
+                    />
+                  </td>
                   <td className={`py-2 ${entry.is_active ? "" : "text-blush-100/40 line-through"}`}>
                     <span className="text-blush-100/50">{entry.category_name} / </span>
                     {entry.name}

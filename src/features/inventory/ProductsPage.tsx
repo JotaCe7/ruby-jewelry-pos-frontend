@@ -10,7 +10,9 @@ import {
 } from "../../api/catalogs";
 import { suppliersApi } from "../../api/contacts";
 import { previewSku, productsApi } from "../../api/inventory";
+import { uploadImage } from "../../api/uploadImage";
 import type { ProductEntry, ProductWritePayload } from "../../api/types";
+import { ImagePicker } from "../../components/ImagePicker";
 
 const emptyForm: ProductWritePayload & { category?: number } = {
   sku: "",
@@ -72,6 +74,12 @@ export function ProductsPage() {
 
   const deleteMutation = useMutation({
     mutationFn: (id: number) => productsApi.remove(id),
+    onSuccess: invalidate,
+  });
+
+  const uploadImageMutation = useMutation({
+    mutationFn: ({ id, file }: { id: number; file: File }) =>
+      uploadImage("/inventory/products/", id, file),
     onSuccess: invalidate,
   });
 
@@ -289,6 +297,7 @@ export function ProductsPage() {
         <table className="w-full max-w-5xl text-left text-sm">
           <thead>
             <tr className="text-blush-100/60">
+              <th className="py-1"></th>
               <th className="py-1">SKU</th>
               <th className="py-1">{t("inventory.baseModel")}</th>
               <th className="py-1">{t("catalogs.category")}</th>
@@ -302,6 +311,13 @@ export function ProductsPage() {
           <tbody>
             {products?.map((product) => (
               <tr key={product.id} className="border-b border-ruby-800">
+                <td className="w-14 py-2">
+                  <ImagePicker
+                    imageUrl={product.image}
+                    size={36}
+                    onSelect={(file) => uploadImageMutation.mutate({ id: product.id, file })}
+                  />
+                </td>
                 <td className="py-2">{product.sku}</td>
                 <td className="py-2">{product.base_model}</td>
                 <td className="py-2">

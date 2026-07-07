@@ -4,9 +4,14 @@ export interface NamedCatalogEntry {
   is_active: boolean;
 }
 
+export interface ProductCategoryEntry extends NamedCatalogEntry {
+  image: string | null;
+}
+
 export interface ProductSubcategoryEntry extends NamedCatalogEntry {
   category: number;
   category_name: string;
+  image: string | null;
 }
 
 export interface PaymentMethodEntry extends NamedCatalogEntry {
@@ -70,6 +75,7 @@ export interface ProductEntry {
   id: number;
   sku: string;
   base_model: string;
+  image: string | null;
   subcategory: number;
   subcategory_name: string;
   category_name: string;
