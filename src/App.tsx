@@ -6,15 +6,11 @@ import { LoginPage } from "./features/auth/LoginPage";
 import { RequireAuth } from "./features/auth/RequireAuth";
 import { CatalogsPage } from "./features/catalogs/CatalogsPage";
 import { ContactsPage } from "./features/contacts/ContactsPage";
+import { DashboardPage } from "./features/dashboard/DashboardPage";
 import { ExpensesPage } from "./features/finance/ExpensesPage";
 import { InventoryPage } from "./features/inventory/InventoryPage";
 import { PosPage } from "./features/pos/PosPage";
 import { RegisterAdminPage } from "./features/register/RegisterAdminPage";
-
-function ModulePlaceholder({ titleKey }: { titleKey: string }) {
-  const { t } = useTranslation();
-  return <h1 className="text-2xl font-semibold text-blush-100">{t(titleKey)}</h1>;
-}
 
 const ADMIN_NAV_ITEMS: Array<{ to: string; labelKey: string }> = [
   { to: "/", labelKey: "nav.dashboard" },
@@ -73,10 +69,7 @@ function AppShell() {
 
       <main className={isAdmin ? "p-6" : "p-3"}>
         <Routes>
-          <Route
-            path="/"
-            element={isAdmin ? <ModulePlaceholder titleKey="nav.dashboard" /> : <Navigate to="/pos" replace />}
-          />
+          <Route path="/" element={isAdmin ? <DashboardPage /> : <Navigate to="/pos" replace />} />
           {isAdmin && <Route path="/catalogs/*" element={<CatalogsPage />} />}
           {isAdmin && <Route path="/contacts/*" element={<ContactsPage />} />}
           {isAdmin && <Route path="/finance" element={<ExpensesPage />} />}

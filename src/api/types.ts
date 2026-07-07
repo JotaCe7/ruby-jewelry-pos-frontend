@@ -274,3 +274,70 @@ export interface SetProcessDateResult {
   is_future: boolean;
   has_prior_z: boolean;
 }
+
+export interface TodaySellerStatus {
+  seller_id: number;
+  username: string;
+  is_open: boolean;
+  opened_at: string | null;
+  period_start?: string;
+  period_end?: string;
+  total_sales?: string;
+  total_by_payment_method?: Record<string, string>;
+  total_losses?: string;
+  sale_count?: number;
+}
+
+export interface LowStockProductEntry {
+  id: number;
+  sku: string;
+  base_model: string;
+  current_stock: number;
+  min_stock: number;
+}
+
+export interface TodaySnapshot {
+  process_date: string;
+  sellers: TodaySellerStatus[];
+  low_stock_products: LowStockProductEntry[];
+}
+
+export interface SellerSummaryRow {
+  seller_id: number | null;
+  username: string;
+  total_sales: string;
+  sale_count: number;
+  gift_count: number;
+  damaged_count: number;
+}
+
+export interface SupplierSummaryRow {
+  supplier_id: number | null;
+  supplier_name: string;
+  revenue: string;
+  cost: string;
+  profit: string;
+  margin_pct: string;
+}
+
+export interface TopProductRow {
+  product_id: number;
+  sku: string;
+  base_model: string;
+  revenue: string;
+  quantity: number;
+}
+
+export interface DashboardSummary {
+  date_from: string;
+  date_to: string;
+  total_income: string;
+  total_by_payment_method: Record<string, string>;
+  by_seller: SellerSummaryRow[];
+  by_supplier: SupplierSummaryRow[];
+  top_products: TopProductRow[];
+  total_losses: string;
+  losses_breakdown: { gifts_damaged: string; audit_shrinkage: string };
+  inventory_value: string;
+  low_stock_count: number;
+}

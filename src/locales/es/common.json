@@ -193,5 +193,31 @@
     "historySection": "Historial de cierres",
     "noClosings": "No hay cierres registrados.",
     "performedBy": "Realizado por"
+  },
+  "dashboard": {
+    "tab": {
+      "today": "Hoy",
+      "historico": "Histórico"
+    },
+    "sellersToday": "Vendedores hoy",
+    "noSellers": "Aún no hay vendedores registrados.",
+    "open": "Abierta",
+    "closed": "Cerrada",
+    "notOpenedYet": "Todavía no abre su caja hoy.",
+    "lowStock": "Stock bajo",
+    "noLowStock": "Ningún producto está por debajo de su stock mínimo.",
+    "dateFrom": "Desde",
+    "dateTo": "Hasta",
+    "totalIncome": "Ingresos totales",
+    "inventoryValue": "Valor de inventario",
+    "lowStockCount": "Productos con stock bajo",
+    "byPaymentMethod": "Por método de pago",
+    "bySeller": "Por vendedor",
+    "bySupplier": "Rentabilidad por proveedor",
+    "topProducts": "Productos más vendidos",
+    "revenue": "Ingresos",
+    "profit": "Ganancia",
+    "marginPct": "Margen",
+    "noData": "No hay datos para este rango de fechas."
   }
 }
