@@ -260,6 +260,7 @@
     "reason": "Motivo de la anulación",
     "reasonPlaceholder": "Ej. Cliente se arrepintió, error de cobro…",
     "voidSuccess": "Documento anulado correctamente.",
+    "creditNoteIssued": "Nota de Crédito emitida",
     "noSales": "No hay ventas registradas todavía.",
     "onlyNotaVenta": "Solo se pueden anular Notas de Venta.",
     "alreadyVoided": "Este documento ya fue anulado."

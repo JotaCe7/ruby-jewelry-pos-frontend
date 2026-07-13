@@ -18,13 +18,13 @@ export function VoidModal({
   const { t } = useTranslation();
   const [reason, setReason] = useState("");
   const [pin, setPin] = useState("");
-  const [succeeded, setSucceeded] = useState(false);
+  const [creditNoteNumber, setCreditNoteNumber] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   const mutation = useMutation({
     mutationFn: () => voidDocument(document.id, { reason, pin }),
-    onSuccess: () => {
-      setSucceeded(true);
+    onSuccess: (data) => {
+      setCreditNoteNumber(data.credit_note.document_number);
       setError(null);
       onVoided();
     },
@@ -51,7 +51,7 @@ export function VoidModal({
           </button>
         </div>
 
-        {!succeeded ? (
+        {!creditNoteNumber ? (
           <div className="space-y-3">
             <p className="text-sm text-amber-400">{t("ventas.voidWarning")}</p>
 
@@ -92,6 +92,9 @@ export function VoidModal({
           <div className="space-y-3">
             <p className="rounded bg-green-900/40 px-2 py-1 text-sm text-green-300">
               {t("ventas.voidSuccess")}
+            </p>
+            <p className="text-sm text-blush-100/80">
+              {t("ventas.creditNoteIssued")}: <span className="font-mono">{creditNoteNumber}</span>
             </p>
             <button
               className="w-full rounded bg-ruby-600 py-2 font-semibold text-blush-100 hover:bg-ruby-500"

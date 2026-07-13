@@ -20,8 +20,14 @@ export const documentsApi = createCrudApi<SaleDocumentEntry, never>("/pos/docume
 
 // Anulación: only a Nota de Venta can be voided today, confirmed with the
 // shared closing PIN (same authorization mechanism as X/Z closings).
+// Also issues an internal Nota de Crédito (its own gapless correlativo,
+// dated today) so the correction is traceable in today's Cierre even
+// when the original sale was from an already-closed prior period.
 export async function voidDocument(documentId: number, payload: { reason: string; pin: string }) {
-  const { data } = await apiClient.post<SaleDocumentEntry>(`/pos/documents/${documentId}/void/`, payload);
+  const { data } = await apiClient.post<{ voided_document: SaleDocumentEntry; credit_note: SaleDocumentEntry }>(
+    `/pos/documents/${documentId}/void/`,
+    payload,
+  );
   return data;
 }
 
