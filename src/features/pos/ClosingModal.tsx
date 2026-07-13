@@ -11,6 +11,14 @@ function isExecuted(result: ClosingTotals | RegisterClosingEntry): result is Reg
   return "id" in result;
 }
 
+// Every breakdown is grouped differently (by document series, category,
+// product) but sums the exact same underlying non-voided SALE lines, so
+// each one's total must reconcile with total_sales — showing it here
+// makes that verifiable at a glance instead of requiring mental addition.
+function sumAmounts(rows: Array<{ amount: string }>) {
+  return rows.reduce((sum, row) => sum + Number(row.amount), 0).toFixed(2);
+}
+
 // Shared by the seller's own "Cerrar caja" button in POS and the Admin
 // Cierres screen's "close on behalf of" tool — the only difference is
 // whether `sellerId` is passed (the narrow admin-on-behalf-of case).
@@ -199,6 +207,16 @@ export function ClosingModal({
                       </tr>
                     ))}
                   </tbody>
+                  {result.document_breakdown.length > 1 && (
+                    <tfoot>
+                      <tr className="border-t border-ruby-800 font-semibold">
+                        <td className="pr-2" colSpan={4}>
+                          {t("register.total")}
+                        </td>
+                        <td className="text-right">S/ {sumAmounts(result.document_breakdown)}</td>
+                      </tr>
+                    </tfoot>
+                  )}
                 </table>
               </div>
             )}
@@ -213,6 +231,9 @@ export function ClosingModal({
                     </li>
                   ))}
                 </ul>
+                <p className="mt-1 font-semibold">
+                  {t("register.total")}: S/ {sumAmounts(result.category_breakdown)}
+                </p>
               </div>
             )}
 
@@ -226,6 +247,9 @@ export function ClosingModal({
                     </li>
                   ))}
                 </ul>
+                <p className="mt-1 font-semibold">
+                  {t("register.total")}: S/ {sumAmounts(result.product_breakdown)}
+                </p>
               </div>
             )}
 

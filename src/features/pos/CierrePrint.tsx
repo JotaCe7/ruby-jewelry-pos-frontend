@@ -6,6 +6,14 @@ function formatDocNumber(series: string, number: number) {
   return `${series}-${String(number).padStart(6, "0")}`;
 }
 
+// Every breakdown groups the same non-voided SALE lines differently (by
+// document series, category, product), so each one's total must
+// reconcile with total_sales — printing it makes that verifiable without
+// mental addition, especially once a Nota de Venta has been anulada.
+function sumAmounts(rows: Array<{ amount: string }>) {
+  return rows.reduce((sum, row) => sum + Number(row.amount), 0).toFixed(2);
+}
+
 // Printed the same way as TicketPrint (#print-ticket + the @media print
 // rule in index.css) — shown right after an Impresora-mode X/Z closing,
 // or when reprinting one from the Cierres history.
@@ -94,6 +102,12 @@ export function CierrePrint({ closing, onClose }: { closing: RegisterClosingEntr
                     </div>
                   </div>
                 ))}
+                {closing.document_breakdown.length > 1 && (
+                  <div className="flex justify-between border-t border-black pt-0.5 font-bold">
+                    <span>{t("register.total")}</span>
+                    <span>S/ {sumAmounts(closing.document_breakdown)}</span>
+                  </div>
+                )}
               </div>
             )}
 
@@ -108,6 +122,10 @@ export function CierrePrint({ closing, onClose }: { closing: RegisterClosingEntr
                     <span>S/ {row.amount}</span>
                   </div>
                 ))}
+                <div className="flex justify-between border-t border-black pt-0.5 font-bold">
+                  <span>{t("register.total")}</span>
+                  <span>S/ {sumAmounts(closing.category_breakdown)}</span>
+                </div>
               </div>
             )}
 
@@ -122,6 +140,10 @@ export function CierrePrint({ closing, onClose }: { closing: RegisterClosingEntr
                     <span>S/ {row.amount}</span>
                   </div>
                 ))}
+                <div className="flex justify-between border-t border-black pt-0.5 font-bold">
+                  <span>{t("register.total")}</span>
+                  <span>S/ {sumAmounts(closing.product_breakdown)}</span>
+                </div>
               </div>
             )}
 
