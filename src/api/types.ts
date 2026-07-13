@@ -217,13 +217,43 @@ export interface SaleLineItem {
   combo_group: string | null;
 }
 
+export type DocumentType = "NOTA_VENTA" | "BOLETA" | "FACTURA" | "NOTA_CREDITO" | "NOTA_DEBITO";
+export type DocumentStatus = "ISSUED" | "VOIDED";
+
+export interface SaleDocumentEntry {
+  id: number;
+  sale: number;
+  document_type: DocumentType;
+  document_type_display: string;
+  series: string;
+  correlativo: number;
+  document_number: string;
+  status: DocumentStatus;
+  status_display: string;
+  customer_name: string;
+  customer_document_type: string;
+  customer_document_number: string;
+  subtotal: string;
+  tax_amount: string;
+  total: string;
+  related_document: number | null;
+  voided_at: string | null;
+  voided_by: number | null;
+  voided_by_name: string | null;
+  void_reason: string;
+  created_at: string;
+}
+
 export interface SaleEntry {
   id: number;
   date: string;
   customer: number | null;
   customer_name: string | null;
+  seller_name: string | null;
   line_items: SaleLineItem[];
   total: string;
+  documents: SaleDocumentEntry[];
+  is_voided: boolean;
 }
 
 export interface PaginatedResponse<T> {

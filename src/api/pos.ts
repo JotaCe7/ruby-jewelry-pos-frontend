@@ -8,6 +8,7 @@ import type {
   DraftSaleWritePayload,
   RegisterClosingEntry,
   RegisterStatus,
+  SaleDocumentEntry,
   SaleEntry,
   SaleWritePayload,
   SetProcessDateResult,
@@ -15,6 +16,14 @@ import type {
 
 export const salesApi = createCrudApi<SaleEntry, SaleWritePayload>("/pos/sales/");
 export const registerClosingsApi = createCrudApi<RegisterClosingEntry, never>("/pos/register/closings/");
+export const documentsApi = createCrudApi<SaleDocumentEntry, never>("/pos/documents/");
+
+// Anulación: only a Nota de Venta can be voided today, confirmed with the
+// shared closing PIN (same authorization mechanism as X/Z closings).
+export async function voidDocument(documentId: number, payload: { reason: string; pin: string }) {
+  const { data } = await apiClient.post<SaleDocumentEntry>(`/pos/documents/${documentId}/void/`, payload);
+  return data;
+}
 
 // The draft ticket is a singleton per logged-in user (server-persisted so
 // a dead phone or switching devices mid-sale doesn't lose it) rather than

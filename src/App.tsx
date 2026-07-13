@@ -11,6 +11,7 @@ import { ExpensesPage } from "./features/finance/ExpensesPage";
 import { InventoryPage } from "./features/inventory/InventoryPage";
 import { PosPage } from "./features/pos/PosPage";
 import { RegisterAdminPage } from "./features/register/RegisterAdminPage";
+import { VentasPage } from "./features/ventas/VentasPage";
 
 const ADMIN_NAV_ITEMS: Array<{ to: string; labelKey: string }> = [
   { to: "/", labelKey: "nav.dashboard" },
@@ -19,16 +20,20 @@ const ADMIN_NAV_ITEMS: Array<{ to: string; labelKey: string }> = [
   { to: "/finance", labelKey: "nav.finance" },
   { to: "/inventory", labelKey: "nav.inventory" },
   { to: "/pos", labelKey: "nav.pos" },
+  { to: "/ventas", labelKey: "nav.ventas" },
   { to: "/register", labelKey: "nav.closings" },
 ];
 
-// A Vendedor only ever needs one destination. Inventario is deliberately
-// left out — its catalog table shows unit_cost and supplier per product,
-// which is exactly the margin/business-relationship data kept out of
-// Finanzas/Proveedores for this role; the POS picker already covers the
-// legitimate need (stock while selling) without that leak.
+// A Vendedor mostly just needs POS. Inventario is deliberately left out —
+// its catalog table shows unit_cost and supplier per product, which is
+// exactly the margin/business-relationship data kept out of Finanzas/
+// Proveedores for this role; the POS picker already covers the legitimate
+// need (stock while selling) without that leak. Ventas IS included — a
+// seller needs to reprint or void their own recent tickets, and the
+// backend scopes that screen to their own sales only.
 const SELLER_NAV_ITEMS: Array<{ to: string; labelKey: string }> = [
   { to: "/pos", labelKey: "nav.pos" },
+  { to: "/ventas", labelKey: "nav.ventas" },
 ];
 
 function AppShell() {
@@ -76,6 +81,7 @@ function AppShell() {
           {isAdmin && <Route path="/inventory/*" element={<InventoryPage />} />}
           {isAdmin && <Route path="/register" element={<RegisterAdminPage />} />}
           <Route path="/pos" element={<PosPage />} />
+          <Route path="/ventas" element={<VentasPage />} />
           {!isAdmin && <Route path="*" element={<Navigate to="/pos" replace />} />}
         </Routes>
       </main>

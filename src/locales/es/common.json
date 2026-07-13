@@ -9,6 +9,7 @@
     "finance": "Finanzas",
     "inventory": "Inventario",
     "pos": "Punto de Venta",
+    "ventas": "Ventas",
     "closings": "Cierres",
     "signOut": "Cerrar sesión"
   },
@@ -219,5 +220,35 @@
     "profit": "Ganancia",
     "marginPct": "Margen",
     "noData": "No hay datos para este rango de fechas."
+  },
+  "ticket": {
+    "title": "Comprobante",
+    "seller": "Vendedor",
+    "walkIn": "Público General",
+    "item": "Producto",
+    "qty": "Cant.",
+    "amount": "Importe",
+    "subtotal": "Subtotal",
+    "igv": "IGV (18%)",
+    "voided": "ANULADO",
+    "print": "Imprimir"
+  },
+  "ventas": {
+    "title": "Ventas",
+    "documentNumber": "N° Documento",
+    "customer": "Cliente",
+    "status": "Estado",
+    "issued": "Emitido",
+    "voided": "Anulado",
+    "reprint": "Reimprimir",
+    "void": "Anular",
+    "voidTitle": "Anular Nota de Venta",
+    "voidWarning": "Esta acción devuelve el stock vendido al inventario y no se puede deshacer.",
+    "reason": "Motivo de la anulación",
+    "reasonPlaceholder": "Ej. Cliente se arrepintió, error de cobro…",
+    "voidSuccess": "Documento anulado correctamente.",
+    "noSales": "No hay ventas registradas todavía.",
+    "onlyNotaVenta": "Solo se pueden anular Notas de Venta.",
+    "alreadyVoided": "Este documento ya fue anulado."
   }
 }

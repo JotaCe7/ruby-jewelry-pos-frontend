@@ -9,11 +9,13 @@ import type {
   DraftSaleLineEntry,
   DraftSaleLineWritePayload,
   ProductEntry,
+  SaleEntry,
 } from "../../api/types";
 import { ClosingModal } from "./ClosingModal";
 import { ProductBrowser } from "./ProductBrowser";
 import { RegisterGate } from "./RegisterGate";
 import { TicketPanel } from "./TicketPanel";
+import { TicketPrint } from "./TicketPrint";
 import type { DraftLine } from "./types";
 
 function lineFromServer(line: DraftSaleLineEntry): DraftLine {
@@ -53,6 +55,7 @@ export function PosPage() {
     queryFn: fetchRegisterStatus,
   });
   const [isClosingModalOpen, setIsClosingModalOpen] = useState(false);
+  const [printedSale, setPrintedSale] = useState<SaleEntry | null>(null);
 
   // The ticket is persisted server-side (one draft per logged-in user) so
   // a dead phone or switching devices mid-sale doesn't lose it — see
@@ -161,9 +164,10 @@ export function PosPage() {
       });
       return finalizeDraft();
     },
-    onSuccess: () => {
+    onSuccess: (sale) => {
       setLines([]);
       setActivePanel("browse");
+      setPrintedSale(sale);
       queryClient.invalidateQueries({ queryKey: ["pos-products"] });
       queryClient.invalidateQueries({ queryKey: ["products"] });
       queryClient.invalidateQueries({ queryKey: ["pos-draft"] });
@@ -236,6 +240,8 @@ export function PosPage() {
           onExecuted={() => queryClient.invalidateQueries({ queryKey: ["register-status"] })}
         />
       )}
+
+      {printedSale && <TicketPrint sale={printedSale} onClose={() => setPrintedSale(null)} />}
     </div>
   );
 }

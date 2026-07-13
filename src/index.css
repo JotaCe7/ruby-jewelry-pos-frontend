@@ -22,3 +22,23 @@ body {
   color: var(--color-blush-100);
   font-family: system-ui, "Segoe UI", Roboto, sans-serif;
 }
+
+/* Printing a Nota de Venta on a 58/80mm thermal ticket printer: hide
+   everything except the ticket markup, and let the printer's own paper
+   width dictate layout instead of forcing a fixed mm width (58mm and
+   80mm printers report very different printable widths). */
+@media print {
+  body * {
+    visibility: hidden;
+  }
+  #print-ticket,
+  #print-ticket * {
+    visibility: visible;
+  }
+  #print-ticket {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+  }
+}
