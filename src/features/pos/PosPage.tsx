@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 
@@ -174,65 +174,75 @@ export function PosPage() {
     },
   });
 
+  // Computed separately from the modals below so a Z closing (which flips
+  // registerStatus.is_open to false and swaps this to <RegisterGate>) never
+  // unmounts an already-open ClosingModal/TicketPrint mid-render — the
+  // exact bug that bit the admin "close on behalf" flow earlier: clearing
+  // state the modal itself depends on unmounts it before its result can be
+  // read. The modals live outside this conditional, so they only ever
+  // close when the user dismisses them.
+  let content: ReactNode;
   if (isRegisterLoading) {
-    return <p className="text-blush-100/70">{t("common.loading")}</p>;
-  }
+    content = <p className="text-blush-100/70">{t("common.loading")}</p>;
+  } else if (!registerStatus) {
+    content = <p className="text-red-400">{t("register.statusError")}</p>;
+  } else if (!registerStatus.is_open) {
+    content = <RegisterGate status={registerStatus} />;
+  } else if (isDraftLoading) {
+    content = <p className="text-blush-100/70">{t("common.loading")}</p>;
+  } else {
+    content = (
+      <div>
+        <div className="mb-3 flex items-center justify-between text-xs text-blush-100/60">
+          <span>
+            {t("register.processDate")}: {registerStatus.process_date}
+          </span>
+          <button
+            className="rounded border border-ruby-700 px-3 py-1 text-blush-100/80 hover:text-blush-100"
+            onClick={() => setIsClosingModalOpen(true)}
+          >
+            {t("register.closeCash")}
+          </button>
+        </div>
 
-  if (!registerStatus) {
-    return <p className="text-red-400">{t("register.statusError")}</p>;
-  }
+        <div className="flex flex-col gap-4 md:flex-row">
+          <div
+            className={`${activePanel === "browse" ? "block" : "hidden"} max-h-[75vh] flex-1 overflow-y-auto md:block`}
+          >
+            <ProductBrowser onSelectProduct={addProduct} />
+          </div>
+          <div
+            className={`${activePanel === "ticket" ? "block" : "hidden"} max-h-[75vh] md:block md:w-96 md:border-l md:border-ruby-800 md:pl-4`}
+          >
+            <TicketPanel
+              lines={lines}
+              onUpdateLine={updateLine}
+              onRemoveLine={removeLine}
+              processDate={registerStatus.process_date}
+              customerId={customerId}
+              onCustomerChange={setCustomerId}
+              paymentMethodId={paymentMethodId}
+              onPaymentMethodChange={setPaymentMethodId}
+              onSubmit={() => finalizeMutation.mutate()}
+              isSubmitting={finalizeMutation.isPending}
+              onClearTicket={clearTicket}
+            />
+          </div>
+        </div>
 
-  if (!registerStatus.is_open) {
-    return <RegisterGate status={registerStatus} />;
-  }
-
-  if (isDraftLoading) {
-    return <p className="text-blush-100/70">{t("common.loading")}</p>;
+        <button
+          onClick={() => setActivePanel(activePanel === "browse" ? "ticket" : "browse")}
+          className="fixed bottom-5 right-5 z-10 rounded-full bg-ruby-600 px-5 py-3 font-semibold text-blush-100 shadow-lg shadow-black/40 md:hidden"
+        >
+          {activePanel === "browse" ? `🛒 ${lines.length}` : t("pos.continueBrowsing")}
+        </button>
+      </div>
+    );
   }
 
   return (
     <div>
-      <div className="mb-3 flex items-center justify-between text-xs text-blush-100/60">
-        <span>
-          {t("register.processDate")}: {registerStatus.process_date}
-        </span>
-        <button
-          className="rounded border border-ruby-700 px-3 py-1 text-blush-100/80 hover:text-blush-100"
-          onClick={() => setIsClosingModalOpen(true)}
-        >
-          {t("register.closeCash")}
-        </button>
-      </div>
-
-      <div className="flex flex-col gap-4 md:flex-row">
-        <div className={`${activePanel === "browse" ? "block" : "hidden"} max-h-[75vh] flex-1 overflow-y-auto md:block`}>
-          <ProductBrowser onSelectProduct={addProduct} />
-        </div>
-        <div
-          className={`${activePanel === "ticket" ? "block" : "hidden"} max-h-[75vh] md:block md:w-96 md:border-l md:border-ruby-800 md:pl-4`}
-        >
-          <TicketPanel
-            lines={lines}
-            onUpdateLine={updateLine}
-            onRemoveLine={removeLine}
-            processDate={registerStatus.process_date}
-            customerId={customerId}
-            onCustomerChange={setCustomerId}
-            paymentMethodId={paymentMethodId}
-            onPaymentMethodChange={setPaymentMethodId}
-            onSubmit={() => finalizeMutation.mutate()}
-            isSubmitting={finalizeMutation.isPending}
-            onClearTicket={clearTicket}
-          />
-        </div>
-      </div>
-
-      <button
-        onClick={() => setActivePanel(activePanel === "browse" ? "ticket" : "browse")}
-        className="fixed bottom-5 right-5 z-10 rounded-full bg-ruby-600 px-5 py-3 font-semibold text-blush-100 shadow-lg shadow-black/40 md:hidden"
-      >
-        {activePanel === "browse" ? `🛒 ${lines.length}` : t("pos.continueBrowsing")}
-      </button>
+      {content}
 
       {isClosingModalOpen && (
         <ClosingModal

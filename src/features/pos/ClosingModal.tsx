@@ -5,6 +5,7 @@ import { useTranslation } from "react-i18next";
 
 import { closeRegister } from "../../api/pos";
 import type { ClosingMode, ClosingTotals, ClosingType, RegisterClosingEntry } from "../../api/types";
+import { CierrePrint } from "./CierrePrint";
 
 function isExecuted(result: ClosingTotals | RegisterClosingEntry): result is RegisterClosingEntry {
   return "id" in result;
@@ -28,11 +29,13 @@ export function ClosingModal({
   const [closingType, setClosingType] = useState<ClosingType>("X");
   const [mode, setMode] = useState<ClosingMode>("PANTALLA");
   const [pin, setPin] = useState("");
+  const [includeProductBreakdown, setIncludeProductBreakdown] = useState(false);
   const [result, setResult] = useState<ClosingTotals | RegisterClosingEntry | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [isPrinting, setIsPrinting] = useState(false);
 
   const mutation = useMutation({
-    mutationFn: () => closeRegister({ closingType, mode, pin, sellerId }),
+    mutationFn: () => closeRegister({ closingType, mode, pin, sellerId, includeProductBreakdown }),
     onSuccess: (data) => {
       setResult(data);
       setError(null);
@@ -54,9 +57,11 @@ export function ClosingModal({
       active ? "border-ruby-500 bg-ruby-800 text-blush-100" : "border-ruby-700 text-blush-100/60"
     }`;
 
+  const authorizedByName = result ? (isExecuted(result) ? result.authorized_by_name : result.authorized_by_username) : null;
+
   return (
     <div className="fixed inset-0 z-30 flex items-center justify-center bg-black/60 p-4">
-      <div className="w-full max-w-md rounded border border-ruby-700 bg-ruby-950 p-4">
+      <div className="max-h-[88vh] w-full max-w-lg overflow-y-auto rounded border border-ruby-700 bg-ruby-950 p-4">
         <div className="mb-3 flex items-center justify-between">
           <h2 className="text-lg font-semibold text-blush-200">
             {t("register.closeCash")}
@@ -106,6 +111,15 @@ export function ClosingModal({
               />
             </div>
 
+            <label className="flex items-center gap-2 text-sm text-blush-100/80">
+              <input
+                type="checkbox"
+                checked={includeProductBreakdown}
+                onChange={(event) => setIncludeProductBreakdown(event.target.checked)}
+              />
+              {t("register.includeProductBreakdown")}
+            </label>
+
             {error && <p className="text-sm text-red-400">{error}</p>}
 
             <button
@@ -151,6 +165,70 @@ export function ClosingModal({
               <span className="text-blush-100/60">{t("register.saleCount")}:</span> {result.sale_count}
             </p>
 
+            {closingType === "Z" && authorizedByName && (
+              <p>
+                <span className="text-blush-100/60">{t("closingsAdmin.authorizedBy")}:</span> {authorizedByName}
+              </p>
+            )}
+
+            {result.document_breakdown.length > 0 && (
+              <div>
+                <span className="text-blush-100/60">{t("register.documentBreakdown")}:</span>
+                <table className="mt-1 w-full text-xs">
+                  <thead>
+                    <tr className="text-blush-100/50">
+                      <th className="pr-2 text-left font-normal">{t("register.docType")}</th>
+                      <th className="pr-2 text-left font-normal">{t("register.docFirst")}</th>
+                      <th className="pr-2 text-left font-normal">{t("register.docLast")}</th>
+                      <th className="pr-2 text-right font-normal">{t("register.docCount")}</th>
+                      <th className="text-right font-normal">{t("register.docAmount")}</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {result.document_breakdown.map((row) => (
+                      <tr key={`${row.document_type}-${row.series}`}>
+                        <td className="pr-2">{row.document_type_display}</td>
+                        <td className="pr-2 font-mono">
+                          {row.series}-{String(row.first_number).padStart(6, "0")}
+                        </td>
+                        <td className="pr-2 font-mono">
+                          {row.series}-{String(row.last_number).padStart(6, "0")}
+                        </td>
+                        <td className="pr-2 text-right">{row.count}</td>
+                        <td className="text-right">S/ {row.amount}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+
+            {result.category_breakdown.length > 0 && (
+              <div>
+                <span className="text-blush-100/60">{t("register.categoryBreakdown")}:</span>
+                <ul className="ml-4 list-disc">
+                  {result.category_breakdown.map((row) => (
+                    <li key={row.category_id}>
+                      {row.category_name}: {row.quantity} — S/ {row.amount}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+
+            {result.product_breakdown && result.product_breakdown.length > 0 && (
+              <div>
+                <span className="text-blush-100/60">{t("register.productBreakdown")}:</span>
+                <ul className="ml-4 list-disc">
+                  {result.product_breakdown.map((row) => (
+                    <li key={row.product_id}>
+                      {row.base_model} ({row.sku}): {row.quantity} — S/ {row.amount}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+
             <div className="flex gap-2 pt-2">
               {!isExecuted(result) && (
                 <button
@@ -158,6 +236,14 @@ export function ClosingModal({
                   onClick={() => setResult(null)}
                 >
                   {t("common.cancel")}
+                </button>
+              )}
+              {isExecuted(result) && (
+                <button
+                  className="flex-1 rounded border border-ruby-700 px-3 py-1.5 text-sm text-blush-100/80 hover:text-blush-100"
+                  onClick={() => setIsPrinting(true)}
+                >
+                  {t("ticket.print")}
                 </button>
               )}
               <button
@@ -170,6 +256,10 @@ export function ClosingModal({
           </div>
         )}
       </div>
+
+      {isPrinting && result && isExecuted(result) && (
+        <CierrePrint closing={result} onClose={() => setIsPrinting(false)} />
+      )}
     </div>
   );
 }

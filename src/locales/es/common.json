@@ -168,18 +168,29 @@
     "totalByPaymentMethod": "Por método de pago",
     "totalLosses": "Pérdidas (regalos/dañados)",
     "saleCount": "N° de ventas",
+    "includeProductBreakdown": "Incluir desglose por producto",
+    "documentBreakdown": "Desglose por documento",
+    "docType": "Documento",
+    "docFirst": "N° inicial",
+    "docLast": "N° final",
+    "docCount": "Cant.",
+    "docAmount": "Monto",
+    "categoryBreakdown": "Desglose por categoría",
+    "productBreakdown": "Desglose por producto",
     "runClosing": "Ejecutar cierre",
     "closingSuccess": "Cierre registrado correctamente.",
     "invalidPin": "PIN incorrecto.",
-    "close": "Cerrar"
+    "close": "Cerrar",
+    "registerClosed": "CAJA CERRADA"
   },
   "closingsAdmin": {
     "title": "Cierres",
-    "pinSection": "PIN de cierre",
-    "pinSet": "Ya hay un PIN configurado.",
-    "pinNotSet": "Aún no se ha configurado un PIN de cierre — nadie podrá cerrar caja hasta hacerlo.",
+    "pinSection": "Mi PIN de autorización",
+    "pinHint": "Cada administrador tiene su propio PIN. Al cerrar una caja, el sistema detecta cuál administrador autorizó según el PIN ingresado.",
+    "pinSet": "Ya configuraste tu PIN.",
+    "pinNotSet": "Aún no has configurado tu PIN — no podrás autorizar cierres hasta hacerlo.",
     "newPin": "Nuevo PIN",
-    "setPin": "Guardar PIN",
+    "setPin": "Guardar mi PIN",
     "forceOpenSection": "Corrección retroactiva",
     "forceOpenHint": "Solo para atribuir una venta olvidada a una fecha en la que el vendedor ya cerró: 1) fuerza la apertura de su caja, 2) registra la venta en Punto de Venta seleccionando a ese vendedor con su contraseña, 3) cierra su caja aquí abajo.",
     "forceOpenButton": "Forzar apertura",
@@ -193,7 +204,8 @@
     "filterSeller": "Filtrar por vendedor",
     "historySection": "Historial de cierres",
     "noClosings": "No hay cierres registrados.",
-    "performedBy": "Realizado por"
+    "performedBy": "Realizado por",
+    "authorizedBy": "Autorizado por"
   },
   "dashboard": {
     "tab": {

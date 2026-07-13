@@ -79,22 +79,30 @@ interface CloseRegisterParams {
   mode: ClosingMode;
   pin: string;
   sellerId?: number;
+  includeProductBreakdown?: boolean;
 }
 
 // mode=PANTALLA returns a preview (ClosingTotals) without persisting
 // anything; mode=IMPRESORA persists a RegisterClosing row.
-export async function closeRegister({ closingType, mode, pin, sellerId }: CloseRegisterParams) {
+export async function closeRegister({
+  closingType,
+  mode,
+  pin,
+  sellerId,
+  includeProductBreakdown,
+}: CloseRegisterParams) {
   const { data } = await apiClient.post<ClosingTotals | RegisterClosingEntry>("/pos/register/close/", {
     closing_type: closingType,
     mode,
     pin,
     seller: sellerId,
+    include_product_breakdown: includeProductBreakdown ?? false,
   });
   return data;
 }
 
-// Admin-only: whether the shared closing PIN has been set yet (the hash
-// itself is never returned).
+// Admin-only: whether the CALLING admin's own PIN has been set yet (each
+// admin manages their own — the hash itself is never returned).
 export async function fetchPinStatus() {
   const { data } = await apiClient.get<{ has_pin: boolean }>("/pos/register/pin/");
   return data;

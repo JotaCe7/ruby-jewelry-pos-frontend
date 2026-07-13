@@ -11,7 +11,8 @@ import {
   setClosingPin,
   setProcessDate,
 } from "../../api/pos";
-import type { SetProcessDateResult } from "../../api/types";
+import type { RegisterClosingEntry, SetProcessDateResult } from "../../api/types";
+import { CierrePrint } from "../pos/CierrePrint";
 import { ClosingModal } from "../pos/ClosingModal";
 
 const today = () => new Date().toISOString().slice(0, 10);
@@ -68,6 +69,7 @@ export function RegisterAdminPage() {
   });
 
   const [isClosingModalOpen, setIsClosingModalOpen] = useState(false);
+  const [printingClosing, setPrintingClosing] = useState<RegisterClosingEntry | null>(null);
   const canCloseOnBehalf = forceOpenedSellerId !== null && forceOpenedSellerId === forceOpenSellerId;
   const closingSeller = canCloseOnBehalf ? users?.find((u) => u.id === forceOpenSellerId) : undefined;
 
@@ -81,6 +83,7 @@ export function RegisterAdminPage() {
 
       <div className={sectionClass}>
         <h3 className="mb-2 text-sm font-semibold text-blush-200">{t("closingsAdmin.pinSection")}</h3>
+        <p className="mb-2 text-sm text-blush-100/70">{t("closingsAdmin.pinHint")}</p>
         <p className="mb-3 text-sm text-blush-100/70">
           {pinStatus?.has_pin ? t("closingsAdmin.pinSet") : t("closingsAdmin.pinNotSet")}
         </p>
@@ -200,7 +203,9 @@ export function RegisterAdminPage() {
               <th className="py-1 pr-3 text-right">{t("register.totalSales")}</th>
               <th className="py-1 pr-3 text-right">{t("register.totalLosses")}</th>
               <th className="py-1 pr-3 text-right">{t("register.saleCount")}</th>
-              <th className="py-1">{t("closingsAdmin.performedBy")}</th>
+              <th className="py-1 pr-3">{t("closingsAdmin.performedBy")}</th>
+              <th className="py-1 pr-3">{t("closingsAdmin.authorizedBy")}</th>
+              <th className="py-1 text-right">{t("common.actions")}</th>
             </tr>
           </thead>
           <tbody>
@@ -212,7 +217,16 @@ export function RegisterAdminPage() {
                 <td className="py-2 pr-3 text-right">S/ {closing.total_sales}</td>
                 <td className="py-2 pr-3 text-right">S/ {closing.total_losses}</td>
                 <td className="py-2 pr-3 text-right">{closing.sale_count}</td>
-                <td className="py-2">{closing.performed_by_name}</td>
+                <td className="py-2 pr-3">{closing.performed_by_name}</td>
+                <td className="py-2 pr-3">{closing.authorized_by_name ?? "—"}</td>
+                <td className="py-2 text-right">
+                  <button
+                    className="text-blush-100/70 hover:text-blush-200"
+                    onClick={() => setPrintingClosing(closing)}
+                  >
+                    {t("ventas.reprint")}
+                  </button>
+                </td>
               </tr>
             ))}
           </tbody>
@@ -233,6 +247,10 @@ export function RegisterAdminPage() {
           }}
           onExecuted={() => queryClient.invalidateQueries({ queryKey: ["register-closings"] })}
         />
+      )}
+
+      {printingClosing && (
+        <CierrePrint closing={printingClosing} onClose={() => setPrintingClosing(null)} />
       )}
     </section>
   );

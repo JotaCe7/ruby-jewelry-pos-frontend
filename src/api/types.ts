@@ -278,6 +278,31 @@ export interface RegisterStatus {
 export type ClosingType = "X" | "Z";
 export type ClosingMode = "PANTALLA" | "IMPRESORA";
 
+export interface DocumentBreakdownRow {
+  document_type: DocumentType;
+  document_type_display: string;
+  series: string;
+  first_number: number;
+  last_number: number;
+  count: number;
+  amount: string;
+}
+
+export interface CategoryBreakdownRow {
+  category_id: number;
+  category_name: string;
+  quantity: number;
+  amount: string;
+}
+
+export interface ProductBreakdownRow {
+  product_id: number;
+  sku: string;
+  base_model: string;
+  quantity: number;
+  amount: string;
+}
+
 export interface ClosingTotals {
   period_start: string;
   period_end: string;
@@ -285,6 +310,11 @@ export interface ClosingTotals {
   total_by_payment_method: Record<string, string>;
   total_losses: string;
   sale_count: number;
+  document_breakdown: DocumentBreakdownRow[];
+  category_breakdown: CategoryBreakdownRow[];
+  product_breakdown: ProductBreakdownRow[] | null;
+  // Only present when closing_type is "Z" — which admin's PIN authorized it.
+  authorized_by_username?: string;
 }
 
 export interface RegisterClosingEntry extends ClosingTotals {
@@ -296,6 +326,8 @@ export interface RegisterClosingEntry extends ClosingTotals {
   process_date: string;
   performed_by: number;
   performed_by_name: string;
+  authorized_by: number | null;
+  authorized_by_name: string | null;
   created_at: string;
 }
 
