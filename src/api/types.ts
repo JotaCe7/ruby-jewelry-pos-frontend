@@ -16,6 +16,9 @@ export interface ProductSubcategoryEntry extends NamedCatalogEntry {
 
 export interface PaymentMethodEntry extends NamedCatalogEntry {
   is_cash: boolean;
+  // Preselected on a new POS ticket — exclusive, the backend clears it
+  // from every other method whenever one is saved with this set to true.
+  is_default: boolean;
 }
 
 export interface ContactEntry {

@@ -42,10 +42,13 @@ export function TicketPanel({
 }) {
   const { t } = useTranslation();
   const { data: customers } = useQuery({ queryKey: ["customers"], queryFn: () => customersApi.list() });
-  const { data: paymentMethods } = useQuery({
+  // A deactivated method must never be selectable here, even though the
+  // draft ticket might have been started while it was still active.
+  const { data: allPaymentMethods } = useQuery({
     queryKey: ["payment-methods"],
     queryFn: () => paymentMethodsApi.list(),
   });
+  const paymentMethods = allPaymentMethods?.filter((m) => m.is_active);
 
   const [comboSelection, setComboSelection] = useState<Set<string>>(new Set());
   const [comboDiscountInput, setComboDiscountInput] = useState("");

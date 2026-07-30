@@ -37,6 +37,8 @@
   "catalogs": {
     "expenseCategories": "Categorías de Gasto",
     "paymentMethods": "Métodos de Pago",
+    "isCash": "Es efectivo",
+    "isDefault": "Por defecto en POS",
     "productCategories": "Categorías de Producto",
     "productSubcategories": "Subcategorías de Producto",
     "colors": "Colores / Variantes",

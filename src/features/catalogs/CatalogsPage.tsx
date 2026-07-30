@@ -1,13 +1,9 @@
 import { NavLink, Route, Routes } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 
-import {
-  colorVariantsApi,
-  expenseCategoriesApi,
-  paymentMethodsApi,
-  presentationsApi,
-} from "../../api/catalogs";
+import { colorVariantsApi, expenseCategoriesApi, presentationsApi } from "../../api/catalogs";
 import { NamedCatalogManager } from "../../components/NamedCatalogManager";
+import { PaymentMethodsPage } from "./PaymentMethodsPage";
 import { ProductCategoriesPage } from "./ProductCategoriesPage";
 import { ProductSubcategoriesPage } from "./ProductSubcategoriesPage";
 
@@ -51,16 +47,7 @@ export function CatalogsPage() {
             />
           }
         />
-        <Route
-          path="payment-methods"
-          element={
-            <NamedCatalogManager
-              title={t("catalogs.paymentMethods")}
-              api={paymentMethodsApi}
-              queryKey="payment-methods"
-            />
-          }
-        />
+        <Route path="payment-methods" element={<PaymentMethodsPage />} />
         <Route path="product-categories" element={<ProductCategoriesPage />} />
         <Route path="product-subcategories" element={<ProductSubcategoriesPage />} />
         <Route

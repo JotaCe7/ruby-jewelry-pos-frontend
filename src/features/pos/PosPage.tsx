@@ -89,14 +89,18 @@ export function PosPage() {
     }
   }, [customers, customerId]);
 
-  const { data: paymentMethods } = useQuery({
+  const { data: allPaymentMethods } = useQuery({
     queryKey: ["payment-methods"],
     queryFn: () => paymentMethodsApi.list(),
   });
+  // A deactivated method must never be selectable (nor auto-selected) at
+  // the register, even though the Admin's own Catálogos screen needs the
+  // full list to let them reactivate one.
+  const paymentMethods = allPaymentMethods?.filter((m) => m.is_active);
   useEffect(() => {
     if (hasHydrated.current && paymentMethodId === null && paymentMethods?.length) {
-      const cash = paymentMethods.find((m) => m.is_cash) ?? paymentMethods[0];
-      setPaymentMethodId(cash.id);
+      const preferred = paymentMethods.find((m) => m.is_default) ?? paymentMethods[0];
+      setPaymentMethodId(preferred.id);
     }
   }, [paymentMethods, paymentMethodId]);
 
