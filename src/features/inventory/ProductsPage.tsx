@@ -14,6 +14,7 @@ import { uploadImage } from "../../api/uploadImage";
 import type { ProductEntry, ProductWritePayload } from "../../api/types";
 import { ImagePicker } from "../../components/ImagePicker";
 import { useUnsavedChanges } from "../../contexts/UnsavedChangesContext";
+import { BarcodeLabelModal } from "./BarcodeLabelModal";
 
 // min_stock is kept as a raw string while editing (like suggested_price
 // already is) and only coerced to a number at submit time — a
@@ -27,6 +28,7 @@ type ProductFormState = Omit<ProductWritePayload, "min_stock"> & {
 
 const emptyForm: ProductFormState = {
   sku: "",
+  barcode: "",
   base_model: "",
   subcategory: 0,
   category: undefined,
@@ -59,6 +61,7 @@ export function ProductsPage() {
   const [form, setForm] = useState<typeof emptyForm>(emptyForm);
   const [editingId, setEditingId] = useState<number | null>(null);
   const [isCreating, setIsCreating] = useState(false);
+  const [printingProduct, setPrintingProduct] = useState<ProductEntry | null>(null);
   const { setDirty } = useUnsavedChanges();
 
   // Marks the whole app as having unsaved work for as long as this
@@ -117,6 +120,7 @@ export function ProductsPage() {
     setIsCreating(true);
     setForm({
       sku: product.sku,
+      barcode: product.barcode,
       base_model: product.base_model,
       subcategory: product.subcategory,
       category: undefined,
@@ -296,6 +300,16 @@ export function ProductsPage() {
             </div>
           </div>
 
+          <div className="col-span-2">
+            <label className={labelClass}>{t("inventory.barcode")}</label>
+            <input
+              className={fieldClass}
+              value={form.barcode ?? ""}
+              onChange={(event) => setForm({ ...form, barcode: event.target.value })}
+              placeholder={t("inventory.barcodeAutoHint")}
+            />
+          </div>
+
           <div className="col-span-2 flex items-end gap-2 sm:col-span-4">
             <button type="submit" className="rounded bg-ruby-600 px-4 py-1.5 text-sm font-medium text-blush-100 hover:bg-ruby-500">
               {t("common.save")}
@@ -355,6 +369,12 @@ export function ProductsPage() {
                 <td className="py-2 text-right whitespace-nowrap">
                   <button
                     className="mr-3 text-blush-100/70 hover:text-blush-200"
+                    onClick={() => setPrintingProduct(product)}
+                  >
+                    {t("inventory.printLabels")}
+                  </button>
+                  <button
+                    className="mr-3 text-blush-100/70 hover:text-blush-200"
                     onClick={() => startEditing(product)}
                   >
                     {t("common.edit")}
@@ -372,6 +392,10 @@ export function ProductsPage() {
             ))}
           </tbody>
         </table>
+      )}
+
+      {printingProduct && (
+        <BarcodeLabelModal product={printingProduct} onClose={() => setPrintingProduct(null)} />
       )}
     </section>
   );
