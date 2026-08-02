@@ -246,7 +246,9 @@
     "subtotal": "Subtotal",
     "igv": "IGV (18%)",
     "voided": "ANULADO",
-    "print": "Imprimir"
+    "print": "Imprimir",
+    "share": "Compartir por WhatsApp",
+    "shareUnsupported": "Este dispositivo no permite compartir directamente — se descargó la imagen del ticket, adjúntala manualmente."
   },
   "ventas": {
     "title": "Ventas",

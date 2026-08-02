@@ -1,3 +1,5 @@
+import html2canvas from "html2canvas";
+import { useRef } from "react";
 import { useTranslation } from "react-i18next";
 
 import type { SaleEntry } from "../../api/types";
@@ -9,6 +11,40 @@ import type { SaleEntry } from "../../api/types";
 export function TicketPrint({ sale, onClose }: { sale: SaleEntry; onClose: () => void }) {
   const { t } = useTranslation();
   const document = sale.documents[0];
+  const ticketRef = useRef<HTMLDivElement>(null);
+
+  // Web Share API (with file support) only exists on secure contexts
+  // (HTTPS) and mainly on mobile browsers — exactly this app's real
+  // usage pattern. Renders the ticket to a PNG rather than a real PDF:
+  // simpler, and a receipt image is all a customer needs over WhatsApp.
+  async function handleShare() {
+    if (!ticketRef.current) return;
+    const canvas = await html2canvas(ticketRef.current, { backgroundColor: "#ffffff" });
+    const blob: Blob | null = await new Promise((resolve) => canvas.toBlob(resolve, "image/png"));
+    if (!blob) return;
+    const fileName = `${document?.document_number || sale.id}.png`;
+    const file = new File([blob], fileName, { type: "image/png" });
+
+    if (navigator.canShare?.({ files: [file] })) {
+      try {
+        await navigator.share({ files: [file], title: t("ticket.title") });
+      } catch {
+        // AbortError when the user just cancels the native share sheet —
+        // nothing to handle, not an error worth surfacing.
+      }
+      return;
+    }
+
+    // Desktop / unsupported browsers: no native share sheet exists, so
+    // fall back to a plain download the user can attach by hand.
+    const url = URL.createObjectURL(blob);
+    const link = window.document.createElement("a");
+    link.href = url;
+    link.download = fileName;
+    link.click();
+    URL.revokeObjectURL(url);
+    window.alert(t("ticket.shareUnsupported"));
+  }
 
   return (
     <div className="fixed inset-0 z-30 flex items-center justify-center bg-black/60 p-4">
@@ -21,7 +57,7 @@ export function TicketPrint({ sale, onClose }: { sale: SaleEntry; onClose: () =>
         </div>
 
         <div className="overflow-y-auto p-4">
-          <div id="print-ticket" className="mx-auto w-full max-w-[80mm] text-black">
+          <div id="print-ticket" ref={ticketRef} className="mx-auto w-full max-w-[80mm] text-black">
             <div className="mb-2 text-center">
               <p className="font-bold">{t("app.name")}</p>
               {document && (
@@ -104,18 +140,26 @@ export function TicketPrint({ sale, onClose }: { sale: SaleEntry; onClose: () =>
           </div>
         </div>
 
-        <div className="flex gap-2 border-t border-ruby-800 p-3">
+        <div className="flex flex-col gap-2 border-t border-ruby-800 p-3">
+          <div className="flex gap-2">
+            <button
+              className="flex-1 rounded border border-ruby-700 px-3 py-1.5 text-sm text-blush-100/80 hover:text-blush-100"
+              onClick={onClose}
+            >
+              {t("common.cancel")}
+            </button>
+            <button
+              className="flex-1 rounded bg-ruby-600 px-3 py-1.5 text-sm font-medium text-blush-100 hover:bg-ruby-500"
+              onClick={() => window.print()}
+            >
+              {t("ticket.print")}
+            </button>
+          </div>
           <button
-            className="flex-1 rounded border border-ruby-700 px-3 py-1.5 text-sm text-blush-100/80 hover:text-blush-100"
-            onClick={onClose}
+            className="rounded border border-green-700 bg-green-700/20 px-3 py-1.5 text-sm font-medium text-green-100 hover:bg-green-700/40"
+            onClick={handleShare}
           >
-            {t("common.cancel")}
-          </button>
-          <button
-            className="flex-1 rounded bg-ruby-600 px-3 py-1.5 text-sm font-medium text-blush-100 hover:bg-ruby-500"
-            onClick={() => window.print()}
-          >
-            {t("ticket.print")}
+            {t("ticket.share")}
           </button>
         </div>
       </div>
