@@ -11,6 +11,7 @@
     "pos": "Punto de Venta",
     "ventas": "Ventas",
     "closings": "Cierres",
+    "users": "Usuarios",
     "signOut": "Cerrar sesión"
   },
   "auth": {
@@ -249,6 +250,33 @@
     "print": "Imprimir",
     "share": "Compartir por WhatsApp",
     "shareUnsupported": "Este dispositivo no permite compartir directamente — se descargó la imagen del ticket, adjúntala manualmente."
+  },
+  "users": {
+    "title": "Usuarios",
+    "newUser": "Nuevo usuario",
+    "editUser": "Editar usuario",
+    "fullName": "Nombre completo",
+    "username": "Usuario",
+    "password": "Contraseña",
+    "passwordHint": "déjalo en blanco para no cambiarla",
+    "email": "Correo",
+    "firstName": "Nombres",
+    "lastName": "Apellidos",
+    "role": "Rol",
+    "roleAdmin": "Admin",
+    "roleVendedor": "Vendedor",
+    "phone": "Teléfono",
+    "birthDate": "Fecha de nacimiento",
+    "gender": "Sexo",
+    "genderMale": "Masculino",
+    "genderFemale": "Femenino",
+    "genderOther": "Otro",
+    "documentType": "Tipo de documento",
+    "documentNumber": "N° Documento",
+    "hireDate": "Fecha de ingreso",
+    "address": "Dirección",
+    "active": "Activo",
+    "saveError": "No se pudo guardar el usuario"
   },
   "ventas": {
     "title": "Ventas",

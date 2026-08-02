@@ -11,6 +11,7 @@ import { ExpensesPage } from "./features/finance/ExpensesPage";
 import { InventoryPage } from "./features/inventory/InventoryPage";
 import { PosPage } from "./features/pos/PosPage";
 import { RegisterAdminPage } from "./features/register/RegisterAdminPage";
+import { UsersPage } from "./features/users/UsersPage";
 import { VentasPage } from "./features/ventas/VentasPage";
 
 const ADMIN_NAV_ITEMS: Array<{ to: string; labelKey: string }> = [
@@ -22,6 +23,7 @@ const ADMIN_NAV_ITEMS: Array<{ to: string; labelKey: string }> = [
   { to: "/pos", labelKey: "nav.pos" },
   { to: "/ventas", labelKey: "nav.ventas" },
   { to: "/register", labelKey: "nav.closings" },
+  { to: "/users", labelKey: "nav.users" },
 ];
 
 // A Vendedor mostly just needs POS. Inventario is deliberately left out —
@@ -80,6 +82,7 @@ function AppShell() {
           {isAdmin && <Route path="/finance" element={<ExpensesPage />} />}
           {isAdmin && <Route path="/inventory/*" element={<InventoryPage />} />}
           {isAdmin && <Route path="/register" element={<RegisterAdminPage />} />}
+          {isAdmin && <Route path="/users" element={<UsersPage />} />}
           <Route path="/pos" element={<PosPage />} />
           <Route path="/ventas" element={<VentasPage />} />
           {!isAdmin && <Route path="*" element={<Navigate to="/pos" replace />} />}

@@ -3,7 +3,6 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { isAxiosError } from "axios";
 import { useTranslation } from "react-i18next";
 
-import { fetchUsers } from "../../api/auth";
 import {
   fetchPinStatus,
   forceOpenRegister,
@@ -11,6 +10,7 @@ import {
   setClosingPin,
   setProcessDate,
 } from "../../api/pos";
+import { usersApi } from "../../api/users";
 import type { RegisterClosingEntry, SetProcessDateResult } from "../../api/types";
 import { CierrePrint } from "../pos/CierrePrint";
 import { ClosingModal } from "../pos/ClosingModal";
@@ -26,7 +26,10 @@ export function RegisterAdminPage() {
   const { t } = useTranslation();
   const queryClient = useQueryClient();
 
-  const { data: users } = useQuery({ queryKey: ["users"], queryFn: fetchUsers });
+  const { data: users } = useQuery({
+    queryKey: ["user-accounts", { is_active: true }],
+    queryFn: () => usersApi.list({ is_active: "true" }),
+  });
   const { data: pinStatus } = useQuery({ queryKey: ["closing-pin-status"], queryFn: fetchPinStatus });
   const [historySeller, setHistorySeller] = useState<number | "">("");
   const { data: closings, isLoading: isHistoryLoading } = useQuery({

@@ -266,10 +266,40 @@ export interface PaginatedResponse<T> {
   results: T[];
 }
 
-export interface UserEntry {
+// Full user management (Admin-only) — also the single source for
+// seller-selection dropdowns elsewhere via ?is_active=true.
+export interface UserAccountEntry {
   id: number;
   username: string;
-  is_admin: boolean;
+  email: string;
+  first_name: string;
+  last_name: string;
+  is_staff: boolean;
+  is_active: boolean;
+  phone: string;
+  birth_date: string | null;
+  gender: "M" | "F" | "O" | "";
+  document_type: "DNI" | "CE" | "";
+  document_number: string;
+  hire_date: string | null;
+  address: string;
+}
+
+export interface UserAccountWritePayload {
+  username: string;
+  password?: string;
+  email: string;
+  first_name: string;
+  last_name: string;
+  is_staff: boolean;
+  is_active: boolean;
+  phone: string;
+  birth_date: string | null;
+  gender: "M" | "F" | "O" | "";
+  document_type: "DNI" | "CE" | "";
+  document_number: string;
+  hire_date: string | null;
+  address: string;
 }
 
 export interface RegisterStatus {
