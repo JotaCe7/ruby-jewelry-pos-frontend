@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 
@@ -13,6 +13,7 @@ import { previewSku, productsApi } from "../../api/inventory";
 import { uploadImage } from "../../api/uploadImage";
 import type { ProductEntry, ProductWritePayload } from "../../api/types";
 import { ImagePicker } from "../../components/ImagePicker";
+import { useUnsavedChanges } from "../../contexts/UnsavedChangesContext";
 
 // min_stock is kept as a raw string while editing (like suggested_price
 // already is) and only coerced to a number at submit time — a
@@ -58,6 +59,15 @@ export function ProductsPage() {
   const [form, setForm] = useState<typeof emptyForm>(emptyForm);
   const [editingId, setEditingId] = useState<number | null>(null);
   const [isCreating, setIsCreating] = useState(false);
+  const { setDirty } = useUnsavedChanges();
+
+  // Marks the whole app as having unsaved work for as long as this
+  // panel is open — cleared on unmount too, so navigating away through
+  // any path other than the guarded nav links never leaves a stale flag.
+  useEffect(() => {
+    setDirty(isCreating);
+    return () => setDirty(false);
+  }, [isCreating, setDirty]);
 
   const { data: subcategories } = useQuery({
     queryKey: ["product-subcategories", form.category],
