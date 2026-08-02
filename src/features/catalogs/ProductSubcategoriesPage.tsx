@@ -80,8 +80,11 @@ export function ProductSubcategoriesPage() {
 
   function CategorySelect({ value, onChange }: { value: number | ""; onChange: (v: number | "") => void }) {
     return (
+      // Capped and truncated so a long category name can't stretch this
+      // past its row's available width — the closed <select> shows an
+      // ellipsis, the opened dropdown list still shows full names.
       <select
-        className={fieldClass}
+        className={`${fieldClass} max-w-[9rem] truncate`}
         value={value}
         onChange={(event) => onChange(event.target.value ? Number(event.target.value) : "")}
       >
@@ -96,7 +99,7 @@ export function ProductSubcategoriesPage() {
   }
 
   return (
-    <section className="max-w-2xl">
+    <section className="max-w-2xl overflow-x-auto">
       <div className="mb-3 flex items-center justify-between">
         <h2 className="text-xl font-semibold text-blush-200">{t("catalogs.productSubcategories")}</h2>
         {!isCreating && (
@@ -119,7 +122,7 @@ export function ProductSubcategoriesPage() {
 
       {isCreating && (
         <form
-          className="mb-4 flex items-end gap-2 rounded border border-ruby-800 bg-ruby-900/50 p-3"
+          className="mb-4 flex flex-wrap items-end gap-2 rounded border border-ruby-800 bg-ruby-900/50 p-3"
           onSubmit={(event) => {
             event.preventDefault();
             if (form.name.trim() && form.category) createMutation.mutate();
@@ -132,7 +135,7 @@ export function ProductSubcategoriesPage() {
               onChange={(value) => setForm({ ...form, category: value })}
             />
           </div>
-          <div className="flex-1">
+          <div className="min-w-[8rem] flex-1">
             <label className="mb-1 block text-xs text-blush-100/60">{t("catalogs.subcategoryName")}</label>
             <input
               className={`${fieldClass} w-full`}
@@ -159,13 +162,13 @@ export function ProductSubcategoriesPage() {
               editingId === entry.id ? (
                 <tr key={entry.id} className="border-b border-ruby-800">
                   <td className="py-2" colSpan={3}>
-                    <div className="flex items-end gap-2">
+                    <div className="flex flex-wrap items-end gap-2">
                       <CategorySelect
                         value={form.category}
                         onChange={(value) => setForm({ ...form, category: value })}
                       />
                       <input
-                        className={`${fieldClass} flex-1`}
+                        className={`${fieldClass} min-w-[8rem] flex-1`}
                         value={form.name}
                         onChange={(event) => setForm({ ...form, name: event.target.value })}
                         autoFocus
