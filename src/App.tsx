@@ -48,7 +48,7 @@ function AppShell() {
   const navItems = isAdmin ? ADMIN_NAV_ITEMS : SELLER_NAV_ITEMS;
 
   return (
-    <div className="min-h-screen bg-ruby-950 text-blush-100">
+    <div className="min-h-screen overflow-x-hidden bg-ruby-950 text-blush-100">
       <header className="border-b border-ruby-800 bg-ruby-900 px-6 py-4">
         <div className="flex items-center justify-between">
           <h1 className="text-lg font-bold tracking-wide text-blush-200">{t("app.name")}</h1>
@@ -56,14 +56,14 @@ function AppShell() {
             {t("nav.signOut")}
           </button>
         </div>
-        <nav className={`flex gap-4 text-sm ${isAdmin ? "mt-3" : "mt-2"}`}>
+        <nav className={`flex flex-wrap gap-x-4 gap-y-2 text-sm ${isAdmin ? "mt-3" : "mt-2"}`}>
           {navItems.map((item) => (
             <NavLink
               key={item.to}
               to={item.to}
               end={item.to === "/"}
               className={({ isActive }) =>
-                isActive ? "text-blush-200 font-semibold" : "text-blush-100/70"
+                `whitespace-nowrap ${isActive ? "text-blush-200 font-semibold" : "text-blush-100/70"}`
               }
             >
               {t(item.labelKey)}
