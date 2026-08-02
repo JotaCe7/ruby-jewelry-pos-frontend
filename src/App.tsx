@@ -1,6 +1,7 @@
 import { Navigate, NavLink, Route, Routes } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 
+import { useUnsavedChanges } from "./contexts/UnsavedChangesContext";
 import { AuthProvider, useAuth } from "./features/auth/AuthContext";
 import { LoginPage } from "./features/auth/LoginPage";
 import { RequireAuth } from "./features/auth/RequireAuth";
@@ -41,6 +42,7 @@ const SELLER_NAV_ITEMS: Array<{ to: string; labelKey: string }> = [
 function AppShell() {
   const { t } = useTranslation();
   const { logout, currentUser } = useAuth();
+  const { confirmDiscard, setDirty } = useUnsavedChanges();
 
   if (!currentUser) {
     return <div className="min-h-screen bg-ruby-950" />;
@@ -49,12 +51,26 @@ function AppShell() {
   const isAdmin = currentUser.isAdmin;
   const navItems = isAdmin ? ADMIN_NAV_ITEMS : SELLER_NAV_ITEMS;
 
+  function guardNavigation(event: { preventDefault: () => void }) {
+    if (!confirmDiscard(t("common.confirmDiscardChanges"))) {
+      event.preventDefault();
+    } else {
+      setDirty(false);
+    }
+  }
+
   return (
     <div className="min-h-screen overflow-x-hidden bg-ruby-950 text-blush-100">
       <header className="border-b border-ruby-800 bg-ruby-900 px-6 py-4">
         <div className="flex items-center justify-between">
           <h1 className="text-lg font-bold tracking-wide text-blush-200">{t("app.name")}</h1>
-          <button className="text-sm text-blush-100/60 hover:text-blush-100" onClick={logout}>
+          <button
+            className="text-sm text-blush-100/60 hover:text-blush-100"
+            onClick={(event) => {
+              if (confirmDiscard(t("common.confirmDiscardChanges"))) logout();
+              else event.preventDefault();
+            }}
+          >
             {t("nav.signOut")}
           </button>
         </div>
@@ -64,6 +80,7 @@ function AppShell() {
               key={item.to}
               to={item.to}
               end={item.to === "/"}
+              onClick={guardNavigation}
               className={({ isActive }) =>
                 `whitespace-nowrap ${isActive ? "text-blush-200 font-semibold" : "text-blush-100/70"}`
               }

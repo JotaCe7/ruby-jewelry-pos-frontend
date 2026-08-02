@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 
@@ -13,8 +13,19 @@ import { previewSku, productsApi } from "../../api/inventory";
 import { uploadImage } from "../../api/uploadImage";
 import type { ProductEntry, ProductWritePayload } from "../../api/types";
 import { ImagePicker } from "../../components/ImagePicker";
+import { useUnsavedChanges } from "../../contexts/UnsavedChangesContext";
 
-const emptyForm: ProductWritePayload & { category?: number } = {
+// min_stock is kept as a raw string while editing (like suggested_price
+// already is) and only coerced to a number at submit time — a
+// controlled <input type="number"> bound directly to a number state
+// snaps back to "0" the instant the field is cleared to retype a value,
+// since Number("") is 0, not NaN.
+type ProductFormState = Omit<ProductWritePayload, "min_stock"> & {
+  category?: number;
+  min_stock: string;
+};
+
+const emptyForm: ProductFormState = {
   sku: "",
   base_model: "",
   subcategory: 0,
@@ -23,7 +34,7 @@ const emptyForm: ProductWritePayload & { category?: number } = {
   presentation: null,
   supplier: null,
   suggested_price: "",
-  min_stock: 0,
+  min_stock: "0",
 };
 
 export function ProductsPage() {
@@ -48,6 +59,15 @@ export function ProductsPage() {
   const [form, setForm] = useState<typeof emptyForm>(emptyForm);
   const [editingId, setEditingId] = useState<number | null>(null);
   const [isCreating, setIsCreating] = useState(false);
+  const { setDirty } = useUnsavedChanges();
+
+  // Marks the whole app as having unsaved work for as long as this
+  // panel is open — cleared on unmount too, so navigating away through
+  // any path other than the guarded nav links never leaves a stale flag.
+  useEffect(() => {
+    setDirty(isCreating);
+    return () => setDirty(false);
+  }, [isCreating, setDirty]);
 
   const { data: subcategories } = useQuery({
     queryKey: ["product-subcategories", form.category],
@@ -62,7 +82,10 @@ export function ProductsPage() {
     mutationFn: () => {
       const { category, ...payload } = form;
       void category;
-      return editingId ? productsApi.update(editingId, payload) : productsApi.create(payload);
+      const finalPayload = { ...payload, min_stock: Number(payload.min_stock) || 0 };
+      return editingId
+        ? productsApi.update(editingId, finalPayload)
+        : productsApi.create(finalPayload);
     },
     onSuccess: () => {
       setForm(emptyForm);
@@ -101,7 +124,7 @@ export function ProductsPage() {
       presentation: product.presentation,
       supplier: product.supplier,
       suggested_price: product.suggested_price,
-      min_stock: product.min_stock,
+      min_stock: String(product.min_stock),
     });
   }
 
@@ -250,7 +273,7 @@ export function ProductsPage() {
               type="number"
               className={fieldClass}
               value={form.min_stock}
-              onChange={(event) => setForm({ ...form, min_stock: Number(event.target.value) })}
+              onChange={(event) => setForm({ ...form, min_stock: event.target.value })}
             />
           </div>
 

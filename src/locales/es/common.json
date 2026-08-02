@@ -31,6 +31,7 @@
     "actions": "Acciones",
     "loading": "Cargando…",
     "confirmDelete": "¿Seguro que deseas eliminar este registro?",
+    "confirmDiscardChanges": "Tienes cambios sin guardar. ¿Deseas descartarlos?",
     "select": "Selecciona…",
     "image": "Foto",
     "changeImage": "Cambiar imagen"
