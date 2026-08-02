@@ -1,0 +1,16 @@
+# Only used for staging/production deploys. Local dev never touches
+# Docker for the frontend — that's still `npm run dev` (Vite).
+# Deploy command: `docker compose -p ruby-<env> --env-file .env.<env> up -d`
+services:
+  frontend:
+    image: ghcr.io/jotace7/ruby-jewelry-pos-frontend:${IMAGE_TAG:-latest}
+    restart: unless-stopped
+    ports:
+      - "${HTTP_PORT:-80}:80"
+    networks:
+      - shared
+
+networks:
+  shared:
+    name: ${DEPLOY_NETWORK:-ruby-staging}
+    external: true

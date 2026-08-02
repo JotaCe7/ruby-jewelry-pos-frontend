@@ -28,6 +28,14 @@ React + Vite + TypeScript single-page app for Joyería Ruby's ERP/POS system. Co
 
    The app runs at `http://localhost:5173/`. It expects the backend to be running at the URL in `VITE_API_BASE_URL` (defaults to `http://localhost:8000/api`).
 
+## Deployment
+
+Same model as the [backend](https://github.com/JotaCe7/ruby-jewelry-pos): **dev** is always local (`npm run dev` above, never deployed); **staging** and **production** run on the same VPS as the backend, as a separate `frontend` (nginx) container joined to a shared per-environment Docker network so it can reach `backend` by name.
+
+- `Dockerfile` builds the Vite production bundle and serves it via nginx, which also reverse-proxies `/api`, `/admin`, `/static`, and `/media` to the backend container. `VITE_API_BASE_URL` is baked in as the relative path `/api` at build time (not the `http://localhost:8000/api` used for local dev) — so the exact same image is deployed to every environment, no per-environment rebuild.
+- **To deploy:** GitHub → Actions tab → "Deploy Frontend" workflow → "Run workflow" → pick the branch and the target environment (`staging` or `production`).
+- Per-environment config lives in this repo's GitHub Settings → Environments — never committed. See `.env.staging.example` / `.env.production.example` for the variables each environment needs.
+
 ## Project layout
 
 ```
