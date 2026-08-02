@@ -77,6 +77,7 @@ export interface PriceTierEntry {
 export interface ProductEntry {
   id: number;
   sku: string;
+  barcode: string;
   base_model: string;
   image: string | null;
   subcategory: number;
@@ -100,6 +101,7 @@ export interface ProductEntry {
 
 export interface ProductWritePayload {
   sku?: string;
+  barcode?: string;
   base_model: string;
   subcategory: number;
   color?: number | null;
