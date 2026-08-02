@@ -6,6 +6,22 @@ import { useTranslation } from "react-i18next";
 import { usersApi } from "../../api/users";
 import type { UserAccountEntry, UserAccountWritePayload } from "../../api/types";
 
+// Maps the backend's field names to their translated labels, so a
+// validation error naming e.g. "birth_date" reads as "Fecha de
+// nacimiento" instead of the raw snake_case key.
+const FIELD_LABEL_KEYS: Record<string, string> = {
+  phone: "users.phone",
+  birth_date: "users.birthDate",
+  gender: "users.gender",
+  document_type: "users.documentType",
+  document_number: "users.documentNumber",
+  hire_date: "users.hireDate",
+  address: "users.address",
+  username: "users.username",
+  password: "users.password",
+  email: "users.email",
+};
+
 const EMPTY_FORM: UserAccountWritePayload = {
   username: "",
   password: "",
@@ -74,10 +90,16 @@ export function UserFormModal({
     },
     onError: (err) => {
       const data = isAxiosError(err) ? err.response?.data : null;
-      const firstError = data && typeof data === "object" ? Object.values(data)[0] : null;
-      setError(
-        Array.isArray(firstError) ? String(firstError[0]) : t("users.saveError")
-      );
+      if (data && typeof data === "object" && !Array.isArray(data)) {
+        const messages = Object.entries(data).map(([field, msgs]) => {
+          const label = FIELD_LABEL_KEYS[field] ? t(FIELD_LABEL_KEYS[field]) : field;
+          const text = Array.isArray(msgs) ? String(msgs[0]) : String(msgs);
+          return `${label}: ${text}`;
+        });
+        setError(messages.join(" · "));
+      } else {
+        setError(t("users.saveError"));
+      }
     },
   });
 
