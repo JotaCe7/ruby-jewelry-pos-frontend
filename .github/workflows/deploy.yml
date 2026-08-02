@@ -70,7 +70,7 @@ jobs:
             cat > .env.${{ inputs.environment }} <<'ENVEOF'
             IMAGE_TAG=${{ github.sha }}
             DEPLOY_NETWORK=${{ vars.DEPLOY_NETWORK }}
-            HTTP_PORT=${{ vars.HTTP_PORT }}
+            HTTPS_PORT=${{ vars.HTTPS_PORT }}
             ENVEOF
 
             echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u "${{ github.actor }}" --password-stdin
