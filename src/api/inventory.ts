@@ -1,3 +1,4 @@
+import { apiClient } from "./client";
 import { createCrudApi } from "./crudFactory";
 import type {
   InventoryAuditEntry,
@@ -20,3 +21,13 @@ export const inventoryEntriesApi = createCrudApi<InventoryEntryEntry, InventoryE
 export const inventoryAuditsApi = createCrudApi<InventoryAuditEntry, InventoryAuditWritePayload>(
   "/inventory/audits/",
 );
+
+// Read-only hint for the create form — the actual code is only ever
+// assigned for real by the backend at save time (see
+// inventory.services.preview_next_product_code), never reserves anything.
+export async function previewProductCode(subcategoryId: number) {
+  const { data } = await apiClient.get<{ code: string }>("/inventory/products/preview_code/", {
+    params: { subcategory: subcategoryId },
+  });
+  return data.code;
+}
