@@ -192,6 +192,9 @@ export function ProductSubcategoriesPage() {
                     />
                   </td>
                   <td className={`py-2 ${entry.is_active ? "" : "text-blush-100/40 line-through"}`}>
+                    <span className="mr-2 rounded bg-ruby-900 px-1.5 py-0.5 font-mono text-xs text-blush-100/60">
+                      {entry.code}
+                    </span>
                     <span className="text-blush-100/50">{entry.category_name} / </span>
                     {entry.name}
                   </td>
