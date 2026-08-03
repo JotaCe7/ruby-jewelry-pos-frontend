@@ -273,11 +273,26 @@ export function ProductsPage() {
 
           <div>
             <label className={labelClass}>{t("inventory.minStock")}</label>
+            {/* type="text" + inputMode, not type="number": several mobile
+                browsers apply their own native number-field validation on
+                top of React's controlled value, which can restore "0" on
+                blur even when the JS state is correctly "" — this sidesteps
+                that entirely while still bringing up a numeric keypad. */}
             <input
-              type="number"
+              type="text"
+              inputMode="numeric"
+              pattern="[0-9]*"
               className={fieldClass}
               value={form.min_stock}
-              onChange={(event) => setForm({ ...form, min_stock: event.target.value })}
+              onChange={(event) => {
+                const digitsOnly = event.target.value.replace(/[^0-9]/g, "");
+                setForm({ ...form, min_stock: digitsOnly });
+              }}
+              // Selects the pre-filled "0" on focus so clicking in and
+              // pressing any key (Backspace, Del, or just typing a digit)
+              // replaces it immediately — no need to know the cursor
+              // lands after it, where forward-Delete has nothing to do.
+              onFocus={(event) => event.target.select()}
             />
           </div>
 
