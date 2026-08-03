@@ -5,10 +5,15 @@ export interface NamedCatalogEntry {
 }
 
 export interface ProductCategoryEntry extends NamedCatalogEntry {
+  // Auto-generated, 2-digit, never editable — see catalogs.models.ProductCategory.code.
+  code: string;
   image: string | null;
 }
 
 export interface ProductSubcategoryEntry extends NamedCatalogEntry {
+  // Auto-generated (parent category's code + a 2-digit scoped sequence),
+  // never editable — see catalogs.models.ProductSubcategory.code.
+  code: string;
   category: number;
   category_name: string;
   image: string | null;
@@ -100,7 +105,7 @@ export interface ProductEntry {
 }
 
 export interface ProductWritePayload {
-  sku?: string;
+  // No sku here — it's read-only now (auto-generated, never editable).
   barcode?: string;
   base_model: string;
   subcategory: number;

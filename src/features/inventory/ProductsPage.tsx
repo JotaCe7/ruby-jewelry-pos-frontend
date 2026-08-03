@@ -9,7 +9,7 @@ import {
   productSubcategoriesApi,
 } from "../../api/catalogs";
 import { suppliersApi } from "../../api/contacts";
-import { previewSku, productsApi } from "../../api/inventory";
+import { productsApi } from "../../api/inventory";
 import { uploadImage } from "../../api/uploadImage";
 import type { ProductEntry, ProductWritePayload } from "../../api/types";
 import { ImagePicker } from "../../components/ImagePicker";
@@ -27,7 +27,6 @@ type ProductFormState = Omit<ProductWritePayload, "min_stock"> & {
 };
 
 const emptyForm: ProductFormState = {
-  sku: "",
   barcode: "",
   base_model: "",
   subcategory: 0,
@@ -109,17 +108,10 @@ export function ProductsPage() {
     onSuccess: invalidate,
   });
 
-  async function handleGenerateSku() {
-    if (!form.base_model) return;
-    const sku = await previewSku(form.base_model, form.color, form.presentation);
-    setForm({ ...form, sku });
-  }
-
   function startEditing(product: ProductEntry) {
     setEditingId(product.id);
     setIsCreating(true);
     setForm({
-      sku: product.sku,
       barcode: product.barcode,
       base_model: product.base_model,
       subcategory: product.subcategory,
@@ -297,22 +289,16 @@ export function ProductsPage() {
           </div>
 
           <div className="col-span-2">
-            <label className={labelClass}>SKU</label>
-            <div className="flex gap-2">
-              <input
-                className={fieldClass}
-                value={form.sku}
-                onChange={(event) => setForm({ ...form, sku: event.target.value })}
-                placeholder={t("inventory.skuAutoHint")}
-              />
-              <button
-                type="button"
-                onClick={handleGenerateSku}
-                className="whitespace-nowrap rounded border border-ruby-700 px-3 py-1.5 text-sm text-blush-100/80 hover:text-blush-100"
-              >
-                {t("inventory.generateSku")}
-              </button>
-            </div>
+            <label className={labelClass}>{t("inventory.code")}</label>
+            {/* Never editable (backend: Product.sku has editable=False) —
+                assigned automatically from the subcategory's hierarchical
+                code the moment the product is saved, so there's nothing
+                to type here before that happens. */}
+            <p className={`${fieldClass} font-mono text-blush-100/70`}>
+              {editingId
+                ? (products?.find((product) => product.id === editingId)?.sku ?? "—")
+                : t("inventory.codeAssignedOnSave")}
+            </p>
           </div>
 
           <div className="col-span-2">
@@ -350,7 +336,7 @@ export function ProductsPage() {
           <thead>
             <tr className="text-blush-100/60">
               <th className="py-1"></th>
-              <th className="py-1">SKU</th>
+              <th className="py-1">{t("inventory.code")}</th>
               <th className="py-1">{t("inventory.baseModel")}</th>
               <th className="py-1">{t("catalogs.category")}</th>
               <th className="py-1">{t("finance.supplier")}</th>

@@ -79,6 +79,9 @@ export function ProductCategoriesPage() {
                 imageUrl={category.image}
                 onSelect={(file) => uploadImageMutation.mutate({ id: category.id, file })}
               />
+              <span className="rounded bg-ruby-900 px-1.5 py-0.5 font-mono text-xs text-blush-100/60">
+                {category.code}
+              </span>
               {editingId === category.id ? (
                 <input
                   className="flex-1 rounded border border-ruby-700 bg-ruby-900 px-2 py-1 text-blush-100"

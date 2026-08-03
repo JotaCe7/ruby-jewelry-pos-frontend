@@ -1,4 +1,3 @@
-import { apiClient } from "./client";
 import { createCrudApi } from "./crudFactory";
 import type {
   InventoryAuditEntry,
@@ -21,10 +20,3 @@ export const inventoryEntriesApi = createCrudApi<InventoryEntryEntry, InventoryE
 export const inventoryAuditsApi = createCrudApi<InventoryAuditEntry, InventoryAuditWritePayload>(
   "/inventory/audits/",
 );
-
-export async function previewSku(baseModel: string, colorId?: number | null, presentationId?: number | null) {
-  const { data } = await apiClient.get<{ sku: string }>("/inventory/products/preview-sku/", {
-    params: { base_model: baseModel, color: colorId || undefined, presentation: presentationId || undefined },
-  });
-  return data.sku;
-}
