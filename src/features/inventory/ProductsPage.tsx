@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { isAxiosError } from "axios";
 import { useTranslation } from "react-i18next";
 
 import {
@@ -9,7 +10,7 @@ import {
   productSubcategoriesApi,
 } from "../../api/catalogs";
 import { suppliersApi } from "../../api/contacts";
-import { productsApi } from "../../api/inventory";
+import { previewProductCode, productsApi } from "../../api/inventory";
 import { uploadImage } from "../../api/uploadImage";
 import type { ProductEntry, ProductWritePayload } from "../../api/types";
 import { ImagePicker } from "../../components/ImagePicker";
@@ -61,6 +62,7 @@ export function ProductsPage() {
   const [editingId, setEditingId] = useState<number | null>(null);
   const [isCreating, setIsCreating] = useState(false);
   const [printingProduct, setPrintingProduct] = useState<ProductEntry | null>(null);
+  const [saveError, setSaveError] = useState<string | null>(null);
   const { setDirty } = useUnsavedChanges();
 
   // Marks the whole app as having unsaved work for as long as this
@@ -78,6 +80,12 @@ export function ProductsPage() {
     enabled: !!form.category,
   });
 
+  const { data: previewCode } = useQuery({
+    queryKey: ["preview-product-code", form.subcategory],
+    queryFn: () => previewProductCode(form.subcategory),
+    enabled: editingId === null && !!form.subcategory,
+  });
+
   const invalidate = () => queryClient.invalidateQueries({ queryKey: ["products"] });
 
   const saveMutation = useMutation({
@@ -93,7 +101,21 @@ export function ProductsPage() {
       setForm(emptyForm);
       setIsCreating(false);
       setEditingId(null);
+      setSaveError(null);
       invalidate();
+      queryClient.invalidateQueries({ queryKey: ["preview-product-code"] });
+    },
+    onError: (err) => {
+      const data = isAxiosError(err) ? err.response?.data : null;
+      if (data && typeof data === "object" && !Array.isArray(data)) {
+        const messages = Object.entries(data).map(([field, msgs]) => {
+          const text = Array.isArray(msgs) ? String(msgs[0]) : String(msgs);
+          return `${field}: ${text}`;
+        });
+        setSaveError(messages.join(" · "));
+      } else {
+        setSaveError(t("inventory.saveError"));
+      }
     },
   });
 
@@ -111,6 +133,7 @@ export function ProductsPage() {
   function startEditing(product: ProductEntry) {
     setEditingId(product.id);
     setIsCreating(true);
+    setSaveError(null);
     setForm({
       barcode: product.barcode,
       base_model: product.base_model,
@@ -137,6 +160,7 @@ export function ProductsPage() {
             onClick={() => {
               setForm(emptyForm);
               setEditingId(null);
+              setSaveError(null);
               setIsCreating(true);
             }}
           >
@@ -153,6 +177,22 @@ export function ProductsPage() {
             saveMutation.mutate();
           }}
         >
+          <div>
+            <label className={labelClass}>{t("inventory.code")}</label>
+            {/* Never editable (backend: Product.sku has editable=False) —
+                assigned automatically from the subcategory's hierarchical
+                code the moment the product is saved, so there's nothing
+                to type here before that happens. Shown first, matching
+                Category/Subcategory's own create forms. */}
+            <p className={`${fieldClass} font-mono text-blush-100/70`} title={t("catalogs.codePreviewHint")}>
+              {editingId
+                ? (products?.find((product) => product.id === editingId)?.sku ?? "—")
+                : form.subcategory
+                  ? (previewCode ?? "…")
+                  : "—"}
+            </p>
+          </div>
+
           <div className="col-span-2">
             <label className={labelClass}>{t("inventory.baseModel")}</label>
             <input
@@ -288,18 +328,6 @@ export function ProductsPage() {
             />
           </div>
 
-          <div className="col-span-2">
-            <label className={labelClass}>{t("inventory.code")}</label>
-            {/* Never editable (backend: Product.sku has editable=False) —
-                assigned automatically from the subcategory's hierarchical
-                code the moment the product is saved, so there's nothing
-                to type here before that happens. */}
-            <p className={`${fieldClass} font-mono text-blush-100/70`}>
-              {editingId
-                ? (products?.find((product) => product.id === editingId)?.sku ?? "—")
-                : t("inventory.codeAssignedOnSave")}
-            </p>
-          </div>
 
           <div className="col-span-2">
             <label className={labelClass}>{t("inventory.barcode")}</label>
@@ -311,8 +339,16 @@ export function ProductsPage() {
             />
           </div>
 
+          {saveError && (
+            <p className="col-span-2 text-sm text-red-400 sm:col-span-4">{saveError}</p>
+          )}
+
           <div className="col-span-2 flex items-end gap-2 sm:col-span-4">
-            <button type="submit" className="rounded bg-ruby-600 px-4 py-1.5 text-sm font-medium text-blush-100 hover:bg-ruby-500">
+            <button
+              type="submit"
+              disabled={saveMutation.isPending}
+              className="rounded bg-ruby-600 px-4 py-1.5 text-sm font-medium text-blush-100 hover:bg-ruby-500 disabled:opacity-50"
+            >
               {t("common.save")}
             </button>
             <button
@@ -321,6 +357,7 @@ export function ProductsPage() {
               onClick={() => {
                 setIsCreating(false);
                 setEditingId(null);
+                setSaveError(null);
               }}
             >
               {t("common.cancel")}

@@ -2,7 +2,11 @@ import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 
-import { productCategoriesApi, productSubcategoriesApi } from "../../api/catalogs";
+import {
+  previewSubcategoryCode,
+  productCategoriesApi,
+  productSubcategoriesApi,
+} from "../../api/catalogs";
 import { uploadImage } from "../../api/uploadImage";
 import type { ProductSubcategoryEntry } from "../../api/types";
 import { ImagePicker } from "../../components/ImagePicker";
@@ -31,6 +35,12 @@ export function ProductSubcategoriesPage() {
   const [form, setForm] = useState<SubcategoryForm>(emptyForm);
   const [isCreating, setIsCreating] = useState(false);
 
+  const { data: previewCode } = useQuery({
+    queryKey: ["preview-subcategory-code", form.category],
+    queryFn: () => previewSubcategoryCode(form.category as number),
+    enabled: isCreating && editingId === null && !!form.category,
+  });
+
   const invalidate = () => queryClient.invalidateQueries({ queryKey: ["product-subcategories"] });
 
   const createMutation = useMutation({
@@ -44,6 +54,7 @@ export function ProductSubcategoriesPage() {
       setForm(emptyForm);
       setIsCreating(false);
       invalidate();
+      queryClient.invalidateQueries({ queryKey: ["preview-subcategory-code"] });
     },
   });
 
@@ -134,6 +145,15 @@ export function ProductSubcategoriesPage() {
               value={form.category}
               onChange={(value) => setForm({ ...form, category: value })}
             />
+          </div>
+          <div>
+            <label className="mb-1 block text-xs text-blush-100/60">{t("inventory.code")}</label>
+            <span
+              className="block whitespace-nowrap rounded bg-ruby-900 px-2 py-1.5 font-mono text-xs text-blush-100/60"
+              title={t("catalogs.codePreviewHint")}
+            >
+              {form.category ? (previewCode ?? "…") : "—"}
+            </span>
           </div>
           <div className="min-w-[8rem] flex-1">
             <label className="mb-1 block text-xs text-blush-100/60">{t("catalogs.subcategoryName")}</label>

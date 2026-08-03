@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 
-import { productCategoriesApi } from "../../api/catalogs";
+import { previewCategoryCode, productCategoriesApi } from "../../api/catalogs";
 import { uploadImage } from "../../api/uploadImage";
 import { ImagePicker } from "../../components/ImagePicker";
 
@@ -12,6 +12,10 @@ export function ProductCategoriesPage() {
   const { data: categories, isLoading } = useQuery({
     queryKey: ["product-categories"],
     queryFn: () => productCategoriesApi.list(),
+  });
+  const { data: previewCode } = useQuery({
+    queryKey: ["preview-category-code"],
+    queryFn: () => previewCategoryCode(),
   });
 
   const [editingId, setEditingId] = useState<number | null>(null);
@@ -25,6 +29,7 @@ export function ProductCategoriesPage() {
     onSuccess: () => {
       setNewName("");
       invalidate();
+      queryClient.invalidateQueries({ queryKey: ["preview-category-code"] });
     },
   });
 
@@ -52,12 +57,18 @@ export function ProductCategoriesPage() {
       <h2 className="mb-3 text-xl font-semibold text-blush-200">{t("catalogs.productCategories")}</h2>
 
       <form
-        className="mb-4 flex gap-2"
+        className="mb-4 flex items-center gap-2"
         onSubmit={(event) => {
           event.preventDefault();
           if (newName.trim()) createMutation.mutate();
         }}
       >
+        <span
+          className="whitespace-nowrap rounded bg-ruby-900 px-1.5 py-1.5 font-mono text-xs text-blush-100/60"
+          title={t("catalogs.codePreviewHint")}
+        >
+          {previewCode ?? "…"}
+        </span>
         <input
           className="flex-1 rounded border border-ruby-700 bg-ruby-900 px-3 py-1.5 text-blush-100"
           placeholder={t("catalogs.newEntryPlaceholder")}
