@@ -1,4 +1,3 @@
-import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 
@@ -9,6 +8,7 @@ import { ProductResults, type ViewMode } from "./ProductResults";
 import { SortMenu } from "./SortMenu";
 import type { SortOption } from "./types";
 import { sortOptionToOrdering } from "./types";
+import { usePersistedState } from "./usePersistedState";
 
 export function FolderProductBrowser({
   viewMode,
@@ -18,11 +18,17 @@ export function FolderProductBrowser({
   showOutOfStock: boolean;
 }) {
   const { t } = useTranslation();
-  const [categoryId, setCategoryId] = useState<number | null>(null);
-  const [categoryName, setCategoryName] = useState("");
-  const [subcategoryId, setSubcategoryId] = useState<number | null>(null);
-  const [subcategoryName, setSubcategoryName] = useState("");
-  const [sort, setSort] = useState<SortOption>({ field: "name", direction: "asc" });
+  const [categoryId, setCategoryId] = usePersistedState<number | null>("pos.browse.folder.categoryId", null);
+  const [categoryName, setCategoryName] = usePersistedState("pos.browse.folder.categoryName", "");
+  const [subcategoryId, setSubcategoryId] = usePersistedState<number | null>(
+    "pos.browse.folder.subcategoryId",
+    null,
+  );
+  const [subcategoryName, setSubcategoryName] = usePersistedState("pos.browse.folder.subcategoryName", "");
+  const [sort, setSort] = usePersistedState<SortOption>("pos.browse.folder.sort", {
+    field: "name",
+    direction: "asc",
+  });
 
   const { data: categories } = useQuery({
     queryKey: ["product-categories"],
