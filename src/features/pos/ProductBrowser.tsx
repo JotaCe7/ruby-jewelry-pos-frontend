@@ -69,20 +69,8 @@ export function ProductBrowser({ onSelectProduct }: { onSelectProduct: (product:
         </label>
       )}
 
-      {mode === "folder" && (
-        <FolderProductBrowser
-          viewMode={viewMode}
-          showOutOfStock={showOutOfStock}
-          onSelectProduct={onSelectProduct}
-        />
-      )}
-      {mode === "flat" && (
-        <FlatProductBrowser
-          viewMode={viewMode}
-          showOutOfStock={showOutOfStock}
-          onSelectProduct={onSelectProduct}
-        />
-      )}
+      {mode === "folder" && <FolderProductBrowser viewMode={viewMode} showOutOfStock={showOutOfStock} />}
+      {mode === "flat" && <FlatProductBrowser viewMode={viewMode} showOutOfStock={showOutOfStock} />}
       {mode === "scan" && <SkuScanInput viewMode={viewMode} onSelectProduct={onSelectProduct} />}
     </div>
   );

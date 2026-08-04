@@ -11,6 +11,7 @@ import type {
   ProductEntry,
   SaleEntry,
 } from "../../api/types";
+import { CartContext } from "./CartContext";
 import { ClosingModal } from "./ClosingModal";
 import { ProductBrowser } from "./ProductBrowser";
 import { RegisterGate } from "./RegisterGate";
@@ -44,6 +45,19 @@ function linesToPayload(lines: DraftLine[], paymentMethodId: number | null): Dra
   }));
 }
 
+// A line is only safe to bump/adjust from the product browser while it's
+// still in this untouched shape — a customized line (GIFT, combo, manual
+// discount) must only ever be edited from the ticket panel.
+function isDefaultLine(line: DraftLine, productId: number): boolean {
+  return (
+    line.product.id === productId &&
+    line.movementType === "SALE" &&
+    line.comboKey === null &&
+    line.discount === "0.00" &&
+    line.useTierPrice
+  );
+}
+
 export function PosPage() {
   const { t } = useTranslation();
   const queryClient = useQueryClient();
@@ -73,6 +87,7 @@ export function PosPage() {
   const [paymentMethodId, setPaymentMethodId] = useState<number | null>(null);
   const [activePanel, setActivePanel] = useState<"browse" | "ticket">("browse");
   const [saveError, setSaveError] = useState(false);
+  const [expandedProductId, setExpandedProductId] = useState<number | null>(null);
 
   const hasHydrated = useRef(false);
   useEffect(() => {
@@ -135,15 +150,7 @@ export function PosPage() {
 
   function addProduct(product: ProductEntry) {
     setLines((current) => {
-      // Only merge into a still-default row, so a customized line (GIFT, combo, manual discount) isn't touched.
-      const existingIndex = current.findIndex(
-        (line) =>
-          line.product.id === product.id &&
-          line.movementType === "SALE" &&
-          line.comboKey === null &&
-          line.discount === "0.00" &&
-          line.useTierPrice,
-      );
+      const existingIndex = current.findIndex((line) => isDefaultLine(line, product.id));
       if (existingIndex !== -1) {
         const existing = current[existingIndex];
         const quantity = existing.quantity + 1;
@@ -164,6 +171,28 @@ export function PosPage() {
         },
       ];
     });
+  }
+
+  function decrementProduct(productId: number) {
+    setLines((current) => {
+      const existingIndex = current.findIndex((line) => isDefaultLine(line, productId));
+      if (existingIndex === -1) return current;
+      const existing = current[existingIndex];
+      if (existing.quantity <= 1) {
+        return current.filter((_, index) => index !== existingIndex);
+      }
+      const quantity = existing.quantity - 1;
+      const updated = { ...existing, quantity, unitPrice: applicableUnitPrice(existing.product, quantity) };
+      return current.map((line, index) => (index === existingIndex ? updated : line));
+    });
+  }
+
+  function removeProduct(productId: number) {
+    setLines((current) => current.filter((line) => !isDefaultLine(line, productId)));
+  }
+
+  function getLineQuantity(productId: number) {
+    return lines.find((line) => isDefaultLine(line, productId))?.quantity ?? 0;
   }
 
   function updateLine(key: string, changes: Partial<DraftLine>) {
@@ -246,7 +275,18 @@ export function PosPage() {
           <div
             className={`${activePanel === "browse" ? "block" : "hidden"} max-h-[75vh] flex-1 overflow-y-auto md:block`}
           >
-            <ProductBrowser onSelectProduct={addProduct} />
+            <CartContext.Provider
+              value={{
+                getLineQuantity,
+                incrementProduct: addProduct,
+                decrementProduct,
+                removeProduct,
+                expandedProductId,
+                setExpandedProductId,
+              }}
+            >
+              <ProductBrowser onSelectProduct={addProduct} />
+            </CartContext.Provider>
           </div>
           <div
             className={`${activePanel === "ticket" ? "block" : "hidden"} max-h-[75vh] md:block md:w-96 md:border-l md:border-ruby-800 md:pl-4`}
