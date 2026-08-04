@@ -1,19 +1,14 @@
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 
 import { paymentMethodsApi } from "../../api/catalogs";
 import { customersApi } from "../../api/contacts";
-import type { MovementType } from "../../api/types";
 import { computeProration } from "./comboMath";
+import { LineDiscountInput } from "./LineDiscountInput";
+import { LineQuantityInput } from "./LineQuantityInput";
 import type { DraftLine } from "./types";
 import { applicableUnitPrice } from "./types";
-
-const MOVEMENT_TYPES: Array<{ value: MovementType; labelKey: string }> = [
-  { value: "SALE", labelKey: "pos.movementSale" },
-  { value: "GIFT", labelKey: "pos.movementGift" },
-  { value: "DAMAGED", labelKey: "pos.movementDamaged" },
-];
 
 export function TicketPanel({
   lines,
@@ -50,28 +45,7 @@ export function TicketPanel({
   });
   const paymentMethods = allPaymentMethods?.filter((m) => m.is_active);
 
-  const [comboSelection, setComboSelection] = useState<Set<string>>(new Set());
-  const [comboDiscountInput, setComboDiscountInput] = useState("");
-
-  function toggleComboSelection(key: string) {
-    setComboSelection((current) => {
-      const next = new Set(current);
-      if (next.has(key)) next.delete(key);
-      else next.add(key);
-      return next;
-    });
-  }
-
-  function confirmCombo() {
-    const comboKey = `combo-${Date.now()}`;
-    // The combo's shared discount total is stashed on every line's
-    // `discount` field (all identical) so both the live preview above and
-    // the payload builder in PosPage can read it off any one line.
-    comboSelection.forEach((key) => onUpdateLine(key, { comboKey, discount: comboDiscountInput || "0" }));
-    setComboSelection(new Set());
-    setComboDiscountInput("");
-  }
-
+  // Starting a new combo is hidden for now; ungrouping an existing one still works.
   function ungroupCombo(comboKey: string) {
     lines.filter((l) => l.comboKey === comboKey).forEach((l) => onUpdateLine(l.key, { comboKey: null }));
   }
@@ -119,25 +93,24 @@ export function TicketPanel({
         </div>
 
         <div className="flex flex-wrap items-center gap-2">
-          <select
-            className={fieldClass}
-            value={line.movementType}
-            onChange={(event) => onUpdateLine(line.key, { movementType: event.target.value as MovementType })}
+          <button
+            type="button"
+            onClick={() =>
+              onUpdateLine(line.key, { movementType: line.movementType === "SALE" ? "GIFT" : "SALE" })
+            }
+            className={`rounded border px-2 py-1 text-xs font-medium ${
+              line.movementType === "SALE"
+                ? "border-ruby-700 bg-ruby-900 text-blush-100"
+                : "border-ruby-500 bg-ruby-700 text-blush-100"
+            }`}
           >
-            {MOVEMENT_TYPES.map((m) => (
-              <option key={m.value} value={m.value}>
-                {t(m.labelKey)}
-              </option>
-            ))}
-          </select>
+            {line.movementType === "SALE" ? t("pos.movementSale") : t("pos.movementGift")}
+          </button>
 
-          <input
-            type="number"
-            min={1}
+          <LineQuantityInput
+            quantity={line.quantity}
             className={`${fieldClass} w-16`}
-            value={line.quantity}
-            onChange={(event) => {
-              const quantity = Number(event.target.value) || 1;
+            onChange={(quantity) => {
               const unitPrice = line.useTierPrice
                 ? applicableUnitPrice(line.product, quantity)
                 : line.product.suggested_price;
@@ -175,27 +148,14 @@ export function TicketPanel({
               )}
 
               {!line.comboKey ? (
-                <input
-                  type="number"
-                  step="0.01"
+                <LineDiscountInput
+                  discount={line.discount}
                   className={`${fieldClass} w-20`}
                   placeholder={t("pos.discount")}
-                  value={line.discount}
-                  onChange={(event) => onUpdateLine(line.key, { discount: event.target.value })}
+                  onChange={(discount) => onUpdateLine(line.key, { discount })}
                 />
               ) : (
                 <span className="text-xs text-blush-100/60">{t("pos.inCombo")}</span>
-              )}
-
-              {!line.comboKey && (
-                <label className="flex items-center gap-1 text-xs text-blush-100/70">
-                  <input
-                    type="checkbox"
-                    checked={comboSelection.has(line.key)}
-                    onChange={() => toggleComboSelection(line.key)}
-                  />
-                  {t("pos.addToCombo")}
-                </label>
               )}
             </>
           )}
@@ -271,22 +231,6 @@ export function TicketPanel({
             {groupLines.map(renderLine)}
           </div>
         ))}
-
-        {comboSelection.size >= 2 && (
-          <div className="mb-3 flex items-center gap-2 rounded border border-ruby-600 bg-ruby-900/60 p-2">
-            <input
-              type="number"
-              step="0.01"
-              className={fieldClass}
-              placeholder={t("pos.comboDiscountTotal")}
-              value={comboDiscountInput}
-              onChange={(event) => setComboDiscountInput(event.target.value)}
-            />
-            <button className="rounded bg-ruby-600 px-3 py-1 text-sm text-blush-100" onClick={confirmCombo}>
-              {t("pos.applyCombo")}
-            </button>
-          </div>
-        )}
       </div>
 
       <div className="mt-3 border-t border-ruby-800 pt-3">

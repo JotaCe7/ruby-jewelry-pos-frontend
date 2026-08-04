@@ -3,6 +3,8 @@ import { createCrudApi } from "./crudFactory";
 import type {
   InventoryAuditEntry,
   InventoryAuditWritePayload,
+  InventoryDamageEntry,
+  InventoryDamageWritePayload,
   InventoryEntryEntry,
   InventoryEntryWritePayload,
   PriceTierEntry,
@@ -20,6 +22,9 @@ export const inventoryEntriesApi = createCrudApi<InventoryEntryEntry, InventoryE
 );
 export const inventoryAuditsApi = createCrudApi<InventoryAuditEntry, InventoryAuditWritePayload>(
   "/inventory/audits/",
+);
+export const inventoryDamagesApi = createCrudApi<InventoryDamageEntry, InventoryDamageWritePayload>(
+  "/inventory/damages/",
 );
 
 // Read-only hint for the create form — the actual code is only ever

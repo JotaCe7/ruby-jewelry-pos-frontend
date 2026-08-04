@@ -100,12 +100,8 @@ export function TicketPrint({ sale, onClose }: { sale: SaleEntry; onClose: () =>
                   <tr key={line.id}>
                     <td className="py-0.5">
                       {line.product_name}
-                      {line.movement_type !== "SALE" && (
-                        <span className="ml-1 text-[10px]">
-                          (
-                          {line.movement_type === "GIFT" ? t("pos.movementGift") : t("pos.movementDamaged")}
-                          )
-                        </span>
+                      {line.movement_type === "GIFT" && (
+                        <span className="ml-1 text-[10px]">({t("pos.movementGift")})</span>
                       )}
                     </td>
                     <td className="py-0.5 text-right">{line.quantity}</td>

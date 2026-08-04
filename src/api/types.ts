@@ -152,7 +152,31 @@ export interface InventoryAuditWritePayload {
   physical_count: number;
 }
 
-export type MovementType = "SALE" | "GIFT" | "DAMAGED";
+export interface InventoryDamageEntry {
+  id: number;
+  date: string;
+  product: number;
+  product_sku: string;
+  quantity: number;
+  unit_cost_snapshot: string;
+  reason: string;
+  responsible: number | null;
+  responsible_username: string | null;
+  responsible_other: string;
+  reported_by: number;
+  reported_by_username: string;
+}
+
+export interface InventoryDamageWritePayload {
+  date: string;
+  product: number;
+  quantity: number;
+  reason: string;
+  responsible: number | null;
+  responsible_other: string;
+}
+
+export type MovementType = "SALE" | "GIFT";
 
 export interface SaleLineInput {
   product: number;
@@ -410,7 +434,6 @@ export interface SellerSummaryRow {
   total_sales: string;
   sale_count: number;
   gift_count: number;
-  damaged_count: number;
 }
 
 export interface SupplierSummaryRow {
@@ -439,7 +462,7 @@ export interface DashboardSummary {
   by_supplier: SupplierSummaryRow[];
   top_products: TopProductRow[];
   total_losses: string;
-  losses_breakdown: { gifts_damaged: string; audit_shrinkage: string };
+  losses_breakdown: { gifts: string; damage_reports: string; audit_shrinkage: string };
   inventory_value: string;
   low_stock_count: number;
 }

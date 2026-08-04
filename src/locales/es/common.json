@@ -118,7 +118,13 @@
     "theoreticalStock": "Stock Teórico",
     "physicalCount": "Conteo Físico",
     "lossAdjustment": "Ajuste",
-    "lossValue": "Pérdida Valorizada"
+    "lossValue": "Pérdida Valorizada",
+    "damages": "Daños",
+    "damageQuantity": "Cantidad",
+    "damageResponsible": "Responsable",
+    "damageResponsibleOther": "Otro",
+    "damageReason": "Motivo",
+    "damageReasonPlaceholder": "Ej. se rompió mostrando al cliente"
   },
   "pos": {
     "modeFolder": "Por Categoría",
@@ -140,7 +146,6 @@
     },
     "movementSale": "Venta",
     "movementGift": "Regalo / Cortesía",
-    "movementDamaged": "Dañado / Roto",
     "wholesalePrice": "Precio por mayor",
     "discount": "Descuento",
     "addToCombo": "Agregar a combo",
