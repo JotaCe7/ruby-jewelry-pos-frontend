@@ -16,7 +16,7 @@ import { ProductBrowser } from "./ProductBrowser";
 import { RegisterGate } from "./RegisterGate";
 import { TicketPanel } from "./TicketPanel";
 import { TicketPrint } from "./TicketPrint";
-import type { DraftLine } from "./types";
+import { applicableUnitPrice, type DraftLine } from "./types";
 
 function lineFromServer(line: DraftSaleLineEntry): DraftLine {
   return {
@@ -124,19 +124,36 @@ export function PosPage() {
   }, [lines, registerStatus, customerId, paymentMethodId]);
 
   function addProduct(product: ProductEntry) {
-    setLines((current) => [
-      ...current,
-      {
-        key: `new-${product.id}-${current.length}`,
-        product,
-        movementType: "SALE",
-        quantity: 1,
-        unitPrice: product.suggested_price,
-        useTierPrice: true,
-        discount: "0.00",
-        comboKey: null,
-      },
-    ]);
+    setLines((current) => {
+      // Only merge into a still-default row, so a customized line (GIFT, combo, manual discount) isn't touched.
+      const existingIndex = current.findIndex(
+        (line) =>
+          line.product.id === product.id &&
+          line.movementType === "SALE" &&
+          line.comboKey === null &&
+          line.discount === "0.00" &&
+          line.useTierPrice,
+      );
+      if (existingIndex !== -1) {
+        const existing = current[existingIndex];
+        const quantity = existing.quantity + 1;
+        const updated = { ...existing, quantity, unitPrice: applicableUnitPrice(product, quantity) };
+        return current.map((line, index) => (index === existingIndex ? updated : line));
+      }
+      return [
+        ...current,
+        {
+          key: `new-${product.id}-${current.length}`,
+          product,
+          movementType: "SALE",
+          quantity: 1,
+          unitPrice: product.suggested_price,
+          useTierPrice: true,
+          discount: "0.00",
+          comboKey: null,
+        },
+      ];
+    });
   }
 
   function updateLine(key: string, changes: Partial<DraftLine>) {
