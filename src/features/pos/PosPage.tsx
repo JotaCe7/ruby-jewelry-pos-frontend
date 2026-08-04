@@ -64,6 +64,8 @@ export function PosPage() {
     queryKey: ["pos-draft"],
     queryFn: fetchDraft,
     enabled: !!registerStatus?.is_open,
+    // Never let a stale value outlive an unmount.
+    gcTime: 0,
   });
 
   const [lines, setLines] = useState<DraftLine[]>([]);
