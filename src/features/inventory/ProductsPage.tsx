@@ -369,67 +369,69 @@ export function ProductsPage() {
       {isLoading ? (
         <p className="text-blush-100/70">{t("common.loading")}</p>
       ) : (
-        <table className="w-full max-w-5xl text-left text-sm">
-          <thead>
-            <tr className="text-blush-100/60">
-              <th className="py-1"></th>
-              <th className="py-1">{t("inventory.code")}</th>
-              <th className="py-1">{t("inventory.baseModel")}</th>
-              <th className="py-1">{t("catalogs.category")}</th>
-              <th className="py-1">{t("finance.supplier")}</th>
-              <th className="py-1 text-right">{t("inventory.unitCost")}</th>
-              <th className="py-1 text-right">{t("inventory.suggestedPrice")}</th>
-              <th className="py-1 text-right">{t("inventory.currentStock")}</th>
-              <th className="py-1 text-right">{t("common.actions")}</th>
-            </tr>
-          </thead>
-          <tbody>
-            {products?.map((product) => (
-              <tr key={product.id} className="border-b border-ruby-800">
-                <td className="w-14 py-2">
-                  <ImagePicker
-                    imageUrl={product.image}
-                    size={36}
-                    onSelect={(file) => uploadImageMutation.mutate({ id: product.id, file })}
-                  />
-                </td>
-                <td className="py-2">{product.sku}</td>
-                <td className="py-2">{product.base_model}</td>
-                <td className="py-2">
-                  {product.category_name} / {product.subcategory_name}
-                </td>
-                <td className="py-2">{product.supplier_name ?? "—"}</td>
-                <td className="py-2 text-right">S/ {product.unit_cost}</td>
-                <td className="py-2 text-right">S/ {product.suggested_price}</td>
-                <td className={`py-2 text-right ${product.needs_restock ? "font-semibold text-red-400" : ""}`}>
-                  {product.current_stock}
-                </td>
-                <td className="py-2 text-right whitespace-nowrap">
-                  <button
-                    className="mr-3 text-blush-100/70 hover:text-blush-200"
-                    onClick={() => setPrintingProduct(product)}
-                  >
-                    {t("inventory.printLabels")}
-                  </button>
-                  <button
-                    className="mr-3 text-blush-100/70 hover:text-blush-200"
-                    onClick={() => startEditing(product)}
-                  >
-                    {t("common.edit")}
-                  </button>
-                  <button
-                    className="text-red-400 hover:text-red-300"
-                    onClick={() => {
-                      if (confirm(t("common.confirmDelete"))) deleteMutation.mutate(product.id);
-                    }}
-                  >
-                    {t("common.delete")}
-                  </button>
-                </td>
+        <div className="max-w-5xl overflow-x-auto">
+          <table className="w-full min-w-[860px] text-left text-sm">
+            <thead>
+              <tr className="text-blush-100/60">
+                <th className="py-1"></th>
+                <th className="py-1">{t("inventory.code")}</th>
+                <th className="py-1">{t("inventory.baseModel")}</th>
+                <th className="py-1">{t("catalogs.category")}</th>
+                <th className="py-1">{t("finance.supplier")}</th>
+                <th className="py-1 text-right">{t("inventory.unitCost")}</th>
+                <th className="py-1 text-right">{t("inventory.suggestedPrice")}</th>
+                <th className="py-1 text-right">{t("inventory.currentStock")}</th>
+                <th className="py-1 text-right">{t("common.actions")}</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {products?.map((product) => (
+                <tr key={product.id} className="border-b border-ruby-800">
+                  <td className="w-14 py-2">
+                    <ImagePicker
+                      imageUrl={product.image}
+                      size={36}
+                      onSelect={(file) => uploadImageMutation.mutate({ id: product.id, file })}
+                    />
+                  </td>
+                  <td className="py-2">{product.sku}</td>
+                  <td className="py-2">{product.base_model}</td>
+                  <td className="py-2">
+                    {product.category_name} / {product.subcategory_name}
+                  </td>
+                  <td className="py-2">{product.supplier_name ?? "—"}</td>
+                  <td className="py-2 text-right">S/ {product.unit_cost}</td>
+                  <td className="py-2 text-right">S/ {product.suggested_price}</td>
+                  <td className={`py-2 text-right ${product.needs_restock ? "font-semibold text-red-400" : ""}`}>
+                    {product.current_stock}
+                  </td>
+                  <td className="py-2 text-right whitespace-nowrap">
+                    <button
+                      className="mr-3 text-blush-100/70 hover:text-blush-200"
+                      onClick={() => setPrintingProduct(product)}
+                    >
+                      {t("inventory.printLabels")}
+                    </button>
+                    <button
+                      className="mr-3 text-blush-100/70 hover:text-blush-200"
+                      onClick={() => startEditing(product)}
+                    >
+                      {t("common.edit")}
+                    </button>
+                    <button
+                      className="text-red-400 hover:text-red-300"
+                      onClick={() => {
+                        if (confirm(t("common.confirmDelete"))) deleteMutation.mutate(product.id);
+                      }}
+                    >
+                      {t("common.delete")}
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       )}
 
       {printingProduct && (
