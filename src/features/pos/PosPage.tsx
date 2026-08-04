@@ -70,6 +70,7 @@ export function PosPage() {
   const [customerId, setCustomerId] = useState<number | null>(null);
   const [paymentMethodId, setPaymentMethodId] = useState<number | null>(null);
   const [activePanel, setActivePanel] = useState<"browse" | "ticket">("browse");
+  const [saveError, setSaveError] = useState(false);
 
   const hasHydrated = useRef(false);
   useEffect(() => {
@@ -106,17 +107,24 @@ export function PosPage() {
 
   // Debounced autosave: skip the very first hydration render (nothing
   // changed yet) and coalesce rapid edits into one PATCH instead of one
-  // per keystroke.
+  // per keystroke. Saves are chained through `pendingSave` (instead of
+  // fired independently) so an overlapping request can never complete
+  // after a newer one and silently overwrite it with older data.
   const saveTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const pendingSave = useRef<Promise<unknown>>(Promise.resolve());
   useEffect(() => {
     if (!hasHydrated.current || !registerStatus) return;
     if (saveTimeout.current) clearTimeout(saveTimeout.current);
     saveTimeout.current = setTimeout(() => {
-      saveDraft({
+      const payload = {
         date: registerStatus.process_date,
         customer: customerId,
         lines: linesToPayload(lines, paymentMethodId),
-      });
+      };
+      // Swallow a previous attempt's rejection here (already surfaced by
+      // its own .catch below) so it doesn't short-circuit this one.
+      pendingSave.current = pendingSave.current.catch(() => {}).then(() => saveDraft(payload));
+      pendingSave.current.then(() => setSaveError(false)).catch(() => setSaveError(true));
     }, 600);
     return () => {
       if (saveTimeout.current) clearTimeout(saveTimeout.current);
@@ -225,6 +233,12 @@ export function PosPage() {
             {t("register.closeCash")}
           </button>
         </div>
+
+        {saveError && (
+          <p className="mb-3 rounded border border-red-800 bg-red-950/60 px-3 py-2 text-xs text-red-300">
+            {t("pos.draftSaveError")}
+          </p>
+        )}
 
         <div className="flex flex-col gap-4 md:flex-row">
           <div

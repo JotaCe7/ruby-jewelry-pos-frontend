@@ -38,7 +38,9 @@ async function refreshAccessToken(): Promise<string | null> {
     `${apiClient.defaults.baseURL}/auth/token/refresh/`,
     { refresh: refreshToken },
   );
-  tokenStorage.set(data.access, refreshToken);
+  // SIMPLE_JWT has ROTATE_REFRESH_TOKENS on, so the response carries a new
+  // refresh token — reusing the old one here defeats the rotation.
+  tokenStorage.set(data.access, data.refresh ?? refreshToken);
   return data.access as string;
 }
 

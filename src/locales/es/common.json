@@ -155,7 +155,8 @@
     "continueBrowsing": "Seguir buscando",
     "ticket": "Ticket",
     "clearTicket": "Vaciar ticket",
-    "confirmClearTicket": "¿Seguro que deseas vaciar el ticket? Se perderán todas las líneas agregadas."
+    "confirmClearTicket": "¿Seguro que deseas vaciar el ticket? Se perderán todas las líneas agregadas.",
+    "draftSaveError": "No se pudo guardar el carrito. Revisa tu conexión; los últimos cambios podrían perderse."
   },
   "register": {
     "openTitle": "Caja cerrada",
