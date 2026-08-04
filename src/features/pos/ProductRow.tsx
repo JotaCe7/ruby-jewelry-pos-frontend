@@ -53,21 +53,32 @@ export function ProductRow({ product }: { product: ProductEntry }) {
         <span className={`text-xs ${product.needs_restock ? "font-semibold text-red-400" : "text-blush-100/50"}`}>
           ({product.current_stock})
         </span>
-        {quantity === 0 ? (
-          <button
-            type="button"
-            onClick={(event) => {
-              event.stopPropagation();
-              incrementProduct(product);
-              setExpandedProductId(product.id);
-            }}
-            className="rounded bg-ruby-600 px-3 py-1 text-sm font-medium text-blush-100 hover:bg-ruby-500"
-          >
-            {t("common.add")}
-          </button>
-        ) : (
-          <span className="w-6 text-center text-sm font-semibold text-blush-100">{quantity}</span>
-        )}
+        <div className="w-20 shrink-0">
+          {quantity === 0 ? (
+            <button
+              type="button"
+              onClick={(event) => {
+                event.stopPropagation();
+                incrementProduct(product);
+                setExpandedProductId(product.id);
+              }}
+              className="w-full rounded bg-ruby-600 px-3 py-1 text-sm font-medium text-blush-100 hover:bg-ruby-500"
+            >
+              {t("common.add")}
+            </button>
+          ) : (
+            <button
+              type="button"
+              onClick={(event) => {
+                event.stopPropagation();
+                setExpandedProductId(product.id);
+              }}
+              className="w-full rounded border border-ruby-700 bg-ruby-900 px-3 py-1 text-sm font-semibold text-blush-100"
+            >
+              {quantity}
+            </button>
+          )}
+        </div>
       </div>
 
       {quantity > 0 && isExpanded && (
