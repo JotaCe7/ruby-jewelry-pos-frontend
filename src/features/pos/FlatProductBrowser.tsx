@@ -5,7 +5,6 @@ import { useTranslation } from "react-i18next";
 import { productCategoriesApi, productSubcategoriesApi } from "../../api/catalogs";
 import { suppliersApi } from "../../api/contacts";
 import { productsApi } from "../../api/inventory";
-import type { ProductEntry } from "../../api/types";
 import { useAuth } from "../auth/AuthContext";
 import { MultiSelectChips } from "./MultiSelectChips";
 import { ProductResults, type ViewMode } from "./ProductResults";
@@ -16,11 +15,9 @@ import { sortOptionToOrdering } from "./types";
 export function FlatProductBrowser({
   viewMode,
   showOutOfStock,
-  onSelectProduct,
 }: {
   viewMode: ViewMode;
   showOutOfStock: boolean;
-  onSelectProduct: (product: ProductEntry) => void;
 }) {
   const { t } = useTranslation();
   const { currentUser } = useAuth();
@@ -111,7 +108,7 @@ export function FlatProductBrowser({
       {isLoading ? (
         <p className="text-blush-100/70">{t("common.loading")}</p>
       ) : (
-        <ProductResults products={products ?? []} viewMode={viewMode} onSelect={onSelectProduct} />
+        <ProductResults products={products ?? []} viewMode={viewMode} />
       )}
     </div>
   );

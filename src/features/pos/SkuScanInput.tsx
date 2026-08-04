@@ -49,7 +49,7 @@ export function SkuScanInput({
       />
       {isFetching && <p className="text-sm text-blush-100/60">{t("common.loading")}</p>}
       {matches && matches.length > 0 && (
-        <ProductResults products={matches} viewMode={viewMode} onSelect={onSelectProduct} />
+        <ProductResults products={matches} viewMode={viewMode} />
       )}
       {matches && matches.length === 0 && debouncedValue && (
         <p className="text-sm text-blush-100/60">{t("pos.noSkuMatch")}</p>

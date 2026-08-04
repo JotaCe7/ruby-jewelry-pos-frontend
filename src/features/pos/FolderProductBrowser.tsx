@@ -4,7 +4,6 @@ import { useTranslation } from "react-i18next";
 
 import { productCategoriesApi, productSubcategoriesApi } from "../../api/catalogs";
 import { productsApi } from "../../api/inventory";
-import type { ProductEntry } from "../../api/types";
 import { FolderResults } from "./FolderResults";
 import { ProductResults, type ViewMode } from "./ProductResults";
 import { SortMenu } from "./SortMenu";
@@ -14,11 +13,9 @@ import { sortOptionToOrdering } from "./types";
 export function FolderProductBrowser({
   viewMode,
   showOutOfStock,
-  onSelectProduct,
 }: {
   viewMode: ViewMode;
   showOutOfStock: boolean;
-  onSelectProduct: (product: ProductEntry) => void;
 }) {
   const { t } = useTranslation();
   const [categoryId, setCategoryId] = useState<number | null>(null);
@@ -114,7 +111,7 @@ export function FolderProductBrowser({
       )}
 
       {subcategoryId && (
-        <ProductResults products={products ?? []} viewMode={viewMode} onSelect={onSelectProduct} />
+        <ProductResults products={products ?? []} viewMode={viewMode} />
       )}
     </div>
   );
