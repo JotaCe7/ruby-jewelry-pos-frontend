@@ -36,8 +36,9 @@ function BarcodeLabel({ product, includeName }: { product: ProductEntry; include
 
 export function BarcodeLabelModal({ product, onClose }: { product: ProductEntry; onClose: () => void }) {
   const { t } = useTranslation();
-  // Kept as a string while editing (same reasoning as ProductsPage's
-  // min_stock fix) so the field can be cleared to retype a value.
+  // Kept as a string while editing, same as ProductsPage's min_stock field,
+  // so it can be cleared to retype a value instead of getting stuck at
+  // whatever number is left once the input is emptied.
   const [quantity, setQuantity] = useState("1");
   const [includeName, setIncludeName] = useState(true);
   const [showPrintView, setShowPrintView] = useState(false);
