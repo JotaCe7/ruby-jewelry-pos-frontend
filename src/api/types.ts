@@ -5,14 +5,14 @@ export interface NamedCatalogEntry {
 }
 
 export interface ProductCategoryEntry extends NamedCatalogEntry {
-  // Auto-generated, 2-digit, never editable — see catalogs.models.ProductCategory.code.
+  // Auto-generated, 2-digit, never editable (see catalogs.models.ProductCategory.code).
   code: string;
   image: string | null;
 }
 
 export interface ProductSubcategoryEntry extends NamedCatalogEntry {
   // Auto-generated (parent category's code + a 2-digit scoped sequence),
-  // never editable — see catalogs.models.ProductSubcategory.code.
+  // never editable (see catalogs.models.ProductSubcategory.code).
   code: string;
   category: number;
   category_name: string;
@@ -21,7 +21,7 @@ export interface ProductSubcategoryEntry extends NamedCatalogEntry {
 
 export interface PaymentMethodEntry extends NamedCatalogEntry {
   is_cash: boolean;
-  // Preselected on a new POS ticket — exclusive, the backend clears it
+  // Preselected on a new POS ticket. Exclusive: the backend clears it
   // from every other method whenever one is saved with this set to true.
   is_default: boolean;
 }
@@ -105,7 +105,7 @@ export interface ProductEntry {
 }
 
 export interface ProductWritePayload {
-  // No sku here — it's read-only now (auto-generated, never editable).
+  // No sku here. It's read-only now (auto-generated, never editable).
   barcode?: string;
   base_model: string;
   subcategory: number;
@@ -260,7 +260,7 @@ export interface SaleDocumentEntry {
   document_type: DocumentType;
   document_type_display: string;
   series: string;
-  correlativo: number;
+  sequence_number: number;
   document_number: string;
   status: DocumentStatus;
   status_display: string;
@@ -297,7 +297,7 @@ export interface PaginatedResponse<T> {
   results: T[];
 }
 
-// Full user management (Admin-only) — also the single source for
+// Full user management (Admin-only). Also the single source for
 // seller-selection dropdowns elsewhere via ?is_active=true.
 export interface UserAccountEntry {
   id: number;
@@ -377,7 +377,7 @@ export interface ClosingTotals {
   document_breakdown: DocumentBreakdownRow[];
   category_breakdown: CategoryBreakdownRow[];
   product_breakdown: ProductBreakdownRow[] | null;
-  // Only present when closing_type is "Z" — which admin's PIN authorized it.
+  // Only present when closing_type is "Z", identifying which admin's PIN authorized it.
   authorized_by_username?: string;
 }
 

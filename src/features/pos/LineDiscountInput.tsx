@@ -19,7 +19,7 @@ export function LineDiscountInput({
   const isEmpty = useRef(isZero(discount));
 
   useEffect(() => {
-    // Never clobber an intentionally-cleared field — see onChange below.
+    // Never clobber an intentionally-cleared field. See onChange below.
     if (isEmpty.current) return;
     setText(isZero(discount) ? "" : discount);
   }, [discount]);

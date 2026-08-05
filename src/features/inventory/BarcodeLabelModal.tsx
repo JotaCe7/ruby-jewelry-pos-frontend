@@ -10,7 +10,7 @@ function BarcodeSvg({ value }: { value: string }) {
   useEffect(() => {
     if (!ref.current) return;
     // jsbarcode's own "EAN13" format already renders the 13 digits
-    // below the bars, following the standard real-world layout — no
+    // below the bars, following the standard real-world layout. No
     // need to render the digits separately ourselves.
     JsBarcode(ref.current, value, { format: "EAN13", width: 1, height: 28, fontSize: 9, margin: 0 });
   }, [value]);
@@ -56,13 +56,13 @@ export function BarcodeLabelModal({ product, onClose }: { product: ProductEntry;
           </div>
 
           <div className="overflow-y-auto p-4">
-            {/* Reuses the #print-ticket id/mechanism from TicketPrint —
-                only one of these is ever mounted at a time, and the
+            {/* Reuses the #print-ticket id/mechanism from TicketPrint.
+                Only one of these is ever mounted at a time, and the
                 @media print rule (index.css) doesn't care what content
                 lives inside it, just that everything else on the page
                 gets hidden when printing. flex-wrap lets exactly as many
                 35mm labels fit per row as the real page width allows,
-                wrapping to new rows — and eventually new printed pages —
+                wrapping to new rows (and eventually new printed pages)
                 on its own, with no hardcoded column count. */}
             <div id="print-ticket" className="flex flex-wrap gap-[2mm] bg-white p-[4mm]">
               {Array.from({ length: parsedQuantity }).map((_, index) => (
@@ -95,7 +95,7 @@ export function BarcodeLabelModal({ product, onClose }: { product: ProductEntry;
       <div className="w-full max-w-md rounded border border-ruby-700 bg-ruby-950 p-4">
         <div className="mb-3 flex items-center justify-between">
           <h2 className="text-lg font-semibold text-blush-200">
-            {t("inventory.printLabels")} — {product.base_model}
+            {t("inventory.printLabels")} ({product.base_model})
           </h2>
           <button className="text-blush-100/60 hover:text-blush-100" onClick={onClose}>
             ✕

@@ -18,7 +18,7 @@ export const productSubcategoriesApi = createCrudApi<
   { name: string; category: number; is_active: boolean }
 >("/catalogs/product-subcategories/");
 
-// Read-only hints for the create forms — the actual code is only ever
+// Read-only hints for the create forms. The actual code is only ever
 // assigned for real by the backend at save time (see
 // catalogs.services.preview_next_*), these never reserve anything.
 export async function previewCategoryCode() {

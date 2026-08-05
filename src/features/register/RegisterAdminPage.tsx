@@ -47,7 +47,7 @@ export function RegisterAdminPage() {
   });
 
   // Both steps of the retroactive-correction flow share one seller
-  // selection — closing on someone else's behalf only ever makes sense as
+  // selection. Closing on someone else's behalf only ever makes sense as
   // the tail end of "I just force-opened their register to attribute a
   // forgotten sale," never as a standalone tool, so re-picking the seller
   // clears the "force-opened" flag and hides the close button again.
@@ -221,7 +221,7 @@ export function RegisterAdminPage() {
                 <td className="py-2 pr-3 text-right">S/ {closing.total_losses}</td>
                 <td className="py-2 pr-3 text-right">{closing.sale_count}</td>
                 <td className="py-2 pr-3">{closing.performed_by_name}</td>
-                <td className="py-2 pr-3">{closing.authorized_by_name ?? "—"}</td>
+                <td className="py-2 pr-3">{closing.authorized_by_name ?? "N/A"}</td>
                 <td className="py-2 text-right">
                   <button
                     className="text-blush-100/70 hover:text-blush-200"
@@ -243,7 +243,7 @@ export function RegisterAdminPage() {
           onClose={() => {
             setIsClosingModalOpen(false);
             // Only hide the "close this seller" affordance once the admin
-            // has actually dismissed the modal — clearing it eagerly on
+            // has actually dismissed the modal. Clearing it eagerly on
             // execute would unmount the modal before they can read the
             // just-persisted totals (closingSeller derives from this flag).
             setForceOpenedSellerId(null);

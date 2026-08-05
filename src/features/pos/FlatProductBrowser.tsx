@@ -43,7 +43,7 @@ export function FlatProductBrowser({
     queryKey: ["product-subcategories", "all"],
     queryFn: () => productSubcategoriesApi.list(),
   });
-  // Suppliers are Admin-only on the backend — a Vendedor doesn't get this
+  // Suppliers are Admin-only on the backend. A Seller doesn't get this
   // filter (purchasing/business-relationship data, not needed at the till).
   const { data: suppliers } = useQuery({
     queryKey: ["suppliers"],

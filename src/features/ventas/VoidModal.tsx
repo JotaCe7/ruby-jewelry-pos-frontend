@@ -44,7 +44,7 @@ export function VoidModal({
       <div className="w-full max-w-md rounded border border-ruby-700 bg-ruby-950 p-4">
         <div className="mb-3 flex items-center justify-between">
           <h2 className="text-lg font-semibold text-blush-200">
-            {t("ventas.voidTitle")} — {document.document_number}
+            {t("ventas.voidTitle")} ({document.document_number})
           </h2>
           <button className="text-blush-100/60 hover:text-blush-100" onClick={onClose}>
             ✕

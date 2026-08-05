@@ -18,10 +18,10 @@ export const salesApi = createCrudApi<SaleEntry, SaleWritePayload>("/pos/sales/"
 export const registerClosingsApi = createCrudApi<RegisterClosingEntry, never>("/pos/register/closings/");
 export const documentsApi = createCrudApi<SaleDocumentEntry, never>("/pos/documents/");
 
-// Anulación: only a Nota de Venta can be voided today, confirmed with the
+// Voiding: only a Sales Receipt can be voided today, confirmed with the
 // shared closing PIN (same authorization mechanism as X/Z closings).
-// Also issues an internal Nota de Crédito (its own gapless correlativo,
-// dated today) so the correction is traceable in today's Cierre even
+// Also issues an internal Credit Note (its own gapless sequence number,
+// dated today) so the correction is traceable in today's Closing even
 // when the original sale was from an already-closed prior period.
 export async function voidDocument(documentId: number, payload: { reason: string; pin: string }) {
   const { data } = await apiClient.post<{ voided_document: SaleDocumentEntry; credit_note: SaleDocumentEntry }>(
@@ -65,7 +65,7 @@ export async function openRegister() {
 }
 
 // Admin-only: opens another seller's register regardless of the
-// "must equal today" rule — first step of the retroactive-correction flow.
+// "must equal today" rule. It's the first step of the retroactive-correction flow.
 export async function forceOpenRegister(sellerId: number) {
   const { data } = await apiClient.post<{ is_open: boolean; opened_at: string }>(
     "/pos/register/force-open/",
@@ -108,7 +108,7 @@ export async function closeRegister({
 }
 
 // Admin-only: whether the CALLING admin's own PIN has been set yet (each
-// admin manages their own — the hash itself is never returned).
+// admin manages their own: the hash itself is never returned).
 export async function fetchPinStatus() {
   const { data } = await apiClient.get<{ has_pin: boolean }>("/pos/register/pin/");
   return data;

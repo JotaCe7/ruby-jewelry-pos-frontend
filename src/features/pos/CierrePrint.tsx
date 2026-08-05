@@ -8,14 +8,14 @@ function formatDocNumber(series: string, number: number) {
 
 // Every breakdown groups the same non-voided SALE lines differently (by
 // document series, category, product), so each one's total must
-// reconcile with total_sales — printing it makes that verifiable without
-// mental addition, especially once a Nota de Venta has been anulada.
+// reconcile with total_sales. Printing it makes that verifiable without
+// mental addition, especially once a Sales Receipt has been voided.
 function sumAmounts(rows: Array<{ amount: string }>) {
   return rows.reduce((sum, row) => sum + Number(row.amount), 0).toFixed(2);
 }
 
 // Printed the same way as TicketPrint (#print-ticket + the @media print
-// rule in index.css) — shown right after an Impresora-mode X/Z closing,
+// rule in index.css). Shown right after an Impresora-mode X/Z closing,
 // or when reprinting one from the Cierres history.
 export function CierrePrint({ closing, onClose }: { closing: RegisterClosingEntry; onClose: () => void }) {
   const { t } = useTranslation();

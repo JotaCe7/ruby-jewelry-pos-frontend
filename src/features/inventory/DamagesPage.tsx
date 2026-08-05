@@ -94,7 +94,7 @@ export function DamagesPage() {
             <option value="">{t("common.select")}</option>
             {products?.map((p) => (
               <option key={p.id} value={p.id}>
-                {p.sku} — {p.base_model}
+                {p.sku} ({p.base_model})
               </option>
             ))}
           </select>
@@ -185,8 +185,8 @@ export function DamagesPage() {
                 <td className="py-2">{damage.date}</td>
                 <td className="py-2">{damage.product_sku}</td>
                 <td className="py-2 text-right">{damage.quantity}</td>
-                <td className="py-2">{damage.responsible_username ?? (damage.responsible_other || "—")}</td>
-                <td className="py-2">{damage.reason || "—"}</td>
+                <td className="py-2">{damage.responsible_username ?? (damage.responsible_other || "N/A")}</td>
+                <td className="py-2">{damage.reason || "N/A"}</td>
                 <td className="py-2 text-right">
                   S/ {(Number(damage.unit_cost_snapshot) * damage.quantity).toFixed(2)}
                 </td>

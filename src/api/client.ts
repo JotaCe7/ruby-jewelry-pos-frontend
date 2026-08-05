@@ -39,7 +39,7 @@ async function refreshAccessToken(): Promise<string | null> {
     { refresh: refreshToken },
   );
   // SIMPLE_JWT has ROTATE_REFRESH_TOKENS on, so the response carries a new
-  // refresh token — reusing the old one here defeats the rotation.
+  // refresh token. Reusing the old one here defeats the rotation.
   tokenStorage.set(data.access, data.refresh ?? refreshToken);
   return data.access as string;
 }

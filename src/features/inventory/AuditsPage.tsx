@@ -69,7 +69,7 @@ export function AuditsPage() {
             <option value="">{t("common.select")}</option>
             {products?.map((p) => (
               <option key={p.id} value={p.id}>
-                {p.sku} — {p.base_model}
+                {p.sku} ({p.base_model})
               </option>
             ))}
           </select>

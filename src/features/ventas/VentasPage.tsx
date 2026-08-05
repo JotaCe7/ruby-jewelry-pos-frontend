@@ -45,7 +45,7 @@ export function VentasPage() {
                 return (
                   <tr key={sale.id} className="border-b border-ruby-800">
                     <td className="py-2 pr-3">{sale.date}</td>
-                    <td className="py-2 pr-3 font-mono">{document?.document_number ?? "—"}</td>
+                    <td className="py-2 pr-3 font-mono">{document?.document_number ?? "N/A"}</td>
                     <td className="py-2 pr-3">{sale.customer_name ?? t("ticket.walkIn")}</td>
                     <td className="py-2 pr-3 text-right">S/ {sale.total}</td>
                     <td className="py-2 pr-3">

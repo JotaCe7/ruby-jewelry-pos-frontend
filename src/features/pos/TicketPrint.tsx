@@ -5,7 +5,7 @@ import { useTranslation } from "react-i18next";
 import type { SaleEntry } from "../../api/types";
 
 // Rendered both right after finalizing a sale in POS and when reprinting
-// from the Ventas history — #print-ticket is the only thing visible when
+// from the Ventas history. #print-ticket is the only thing visible when
 // the browser's print dialog runs (see the @media print rule in
 // index.css), so this component's own layout is what ends up on paper.
 export function TicketPrint({ sale, onClose }: { sale: SaleEntry; onClose: () => void }) {
@@ -14,8 +14,8 @@ export function TicketPrint({ sale, onClose }: { sale: SaleEntry; onClose: () =>
   const ticketRef = useRef<HTMLDivElement>(null);
 
   // Web Share API (with file support) only exists on secure contexts
-  // (HTTPS) and mainly on mobile browsers — exactly this app's real
-  // usage pattern. Renders the ticket to a PNG rather than a real PDF:
+  // (HTTPS) and mainly on mobile browsers, which is exactly this app's
+  // real usage pattern. Renders the ticket to a PNG rather than a real PDF:
   // simpler, and a receipt image is all a customer needs over WhatsApp.
   async function handleShare() {
     if (!ticketRef.current) return;
@@ -29,7 +29,7 @@ export function TicketPrint({ sale, onClose }: { sale: SaleEntry; onClose: () =>
       try {
         await navigator.share({ files: [file], title: t("ticket.title") });
       } catch {
-        // AbortError when the user just cancels the native share sheet —
+        // AbortError when the user just cancels the native share sheet:
         // nothing to handle, not an error worth surfacing.
       }
       return;

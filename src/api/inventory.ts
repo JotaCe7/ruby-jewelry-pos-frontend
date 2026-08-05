@@ -27,7 +27,7 @@ export const inventoryDamagesApi = createCrudApi<InventoryDamageEntry, Inventory
   "/inventory/damages/",
 );
 
-// Read-only hint for the create form — the actual code is only ever
+// Read-only hint for the create form. The actual code is only ever
 // assigned for real by the backend at save time (see
 // inventory.services.preview_next_product_code), never reserves anything.
 export async function previewProductCode(subcategoryId: number) {

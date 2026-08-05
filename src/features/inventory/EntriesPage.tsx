@@ -71,7 +71,7 @@ export function EntriesPage() {
             <option value="">{t("common.select")}</option>
             {products?.map((p) => (
               <option key={p.id} value={p.id}>
-                {p.sku} — {p.base_model}
+                {p.sku} ({p.base_model})
               </option>
             ))}
           </select>
@@ -135,7 +135,7 @@ export function EntriesPage() {
                 <td className="py-2">{entry.date}</td>
                 <td className="py-2">{entry.product_sku}</td>
                 <td className="py-2 text-right">+{entry.quantity}</td>
-                <td className="py-2 text-right">{entry.unit_cost ? `S/ ${entry.unit_cost}` : "—"}</td>
+                <td className="py-2 text-right">{entry.unit_cost ? `S/ ${entry.unit_cost}` : "N/A"}</td>
                 <td className="py-2">{entry.notes}</td>
               </tr>
             ))}

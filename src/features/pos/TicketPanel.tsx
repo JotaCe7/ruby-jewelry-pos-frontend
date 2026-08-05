@@ -179,7 +179,7 @@ export function TicketPanel({
 
       <div className="mb-3 grid grid-cols-2 gap-2">
         <div>
-          {/* Not editable — every sale is dated to the global process date
+          {/* Not editable. Every sale is dated to the global process date
               at finalize time, never a client-supplied one. */}
           <label className="mb-1 block text-xs text-blush-100/60">{t("register.processDate")}</label>
           <p className={`${fieldClass} w-full`}>{processDate}</p>

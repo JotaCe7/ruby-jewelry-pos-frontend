@@ -13,14 +13,14 @@ function isExecuted(result: ClosingTotals | RegisterClosingEntry): result is Reg
 
 // Every breakdown is grouped differently (by document series, category,
 // product) but sums the exact same underlying non-voided SALE lines, so
-// each one's total must reconcile with total_sales — showing it here
+// each one's total must reconcile with total_sales. Showing it here
 // makes that verifiable at a glance instead of requiring mental addition.
 function sumAmounts(rows: Array<{ amount: string }>) {
   return rows.reduce((sum, row) => sum + Number(row.amount), 0).toFixed(2);
 }
 
 // Shared by the seller's own "Cerrar caja" button in POS and the Admin
-// Cierres screen's "close on behalf of" tool — the only difference is
+// Cierres screen's "close on behalf of" tool: the only difference is
 // whether `sellerId` is passed (the narrow admin-on-behalf-of case).
 export function ClosingModal({
   sellerId,
@@ -73,7 +73,7 @@ export function ClosingModal({
         <div className="mb-3 flex items-center justify-between">
           <h2 className="text-lg font-semibold text-blush-200">
             {t("register.closeCash")}
-            {sellerLabel ? ` — ${sellerLabel}` : ""}
+            {sellerLabel ? ` (${sellerLabel})` : ""}
           </h2>
           <button className="text-blush-100/60 hover:text-blush-100" onClick={onClose}>
             ✕
@@ -227,7 +227,7 @@ export function ClosingModal({
                 <ul className="ml-4 list-disc">
                   {result.category_breakdown.map((row) => (
                     <li key={row.category_id}>
-                      {row.category_name}: {row.quantity} — S/ {row.amount}
+                      {row.category_name}: {row.quantity} (S/ {row.amount})
                     </li>
                   ))}
                 </ul>
@@ -243,7 +243,7 @@ export function ClosingModal({
                 <ul className="ml-4 list-disc">
                   {result.product_breakdown.map((row) => (
                     <li key={row.product_id}>
-                      {row.base_model} ({row.sku}): {row.quantity} — S/ {row.amount}
+                      {row.base_model} ({row.sku}): {row.quantity} (S/ {row.amount})
                     </li>
                   ))}
                 </ul>

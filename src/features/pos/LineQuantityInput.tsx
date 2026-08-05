@@ -13,7 +13,7 @@ export function LineQuantityInput({
   const isEmpty = useRef(false);
 
   useEffect(() => {
-    // Never clobber an intentionally-cleared field — see onChange below,
+    // Never clobber an intentionally-cleared field (see onChange below);
     // the quantity is already committed as 1 the moment it's emptied.
     if (isEmpty.current) return;
     setText(String(quantity));

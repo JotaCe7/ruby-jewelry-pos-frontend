@@ -92,7 +92,7 @@ export function ProductSubcategoriesPage() {
   function CategorySelect({ value, onChange }: { value: number | ""; onChange: (v: number | "") => void }) {
     return (
       // Capped and truncated so a long category name can't stretch this
-      // past its row's available width — the closed <select> shows an
+      // past its row's available width: the closed <select> shows an
       // ellipsis, the opened dropdown list still shows full names.
       <select
         className={`${fieldClass} max-w-[9rem] truncate`}
@@ -152,7 +152,7 @@ export function ProductSubcategoriesPage() {
               className="block whitespace-nowrap rounded bg-ruby-900 px-2 py-1.5 font-mono text-xs text-blush-100/60"
               title={t("catalogs.codePreviewHint")}
             >
-              {form.category ? (previewCode ?? "…") : "—"}
+              {form.category ? (previewCode ?? "…") : "N/A"}
             </span>
           </div>
           <div className="min-w-[8rem] flex-1">

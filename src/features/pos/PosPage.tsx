@@ -46,7 +46,7 @@ function linesToPayload(lines: DraftLine[], paymentMethodId: number | null): Dra
 }
 
 // A line is only safe to bump/adjust from the product browser while it's
-// still in this untouched shape — a customized line (GIFT, combo, manual
+// still in this untouched shape. A customized line (GIFT, combo, manual
 // discount) must only ever be edited from the ticket panel.
 function isDefaultLine(line: DraftLine, productId: number): boolean {
   return (
@@ -72,7 +72,7 @@ export function PosPage() {
   const [printedSale, setPrintedSale] = useState<SaleEntry | null>(null);
 
   // The ticket is persisted server-side (one draft per logged-in user) so
-  // a dead phone or switching devices mid-sale doesn't lose it — see
+  // a dead phone or switching devices mid-sale doesn't lose it. See
   // project memory for why this replaced an earlier localStorage version.
   const { data: draft, isLoading: isDraftLoading } = useQuery({
     queryKey: ["pos-draft"],
@@ -112,7 +112,7 @@ export function PosPage() {
     queryFn: () => paymentMethodsApi.list(),
   });
   // A deactivated method must never be selectable (nor auto-selected) at
-  // the register, even though the Admin's own Catálogos screen needs the
+  // the register, even though the Admin's own Catalogs screen needs the
   // full list to let them reactivate one.
   const paymentMethods = allPaymentMethods?.filter((m) => m.is_active);
   useEffect(() => {
@@ -215,7 +215,7 @@ export function PosPage() {
     mutationFn: async () => {
       if (!registerStatus) throw new Error("register status not loaded");
       if (saveTimeout.current) clearTimeout(saveTimeout.current);
-      // Make sure the latest edits are saved before finalizing — the
+      // Make sure the latest edits are saved before finalizing: the
       // debounced autosave might not have fired yet.
       await saveDraft({
         date: registerStatus.process_date,
@@ -236,8 +236,8 @@ export function PosPage() {
 
   // Computed separately from the modals below so a Z closing (which flips
   // registerStatus.is_open to false and swaps this to <RegisterGate>) never
-  // unmounts an already-open ClosingModal/TicketPrint mid-render — the
-  // exact bug that bit the admin "close on behalf" flow earlier: clearing
+  // unmounts an already-open ClosingModal/TicketPrint mid-render. This is
+  // the exact bug that bit the admin "close on behalf" flow earlier: clearing
   // state the modal itself depends on unmounts it before its result can be
   // read. The modals live outside this conditional, so they only ever
   // close when the user dismisses them.

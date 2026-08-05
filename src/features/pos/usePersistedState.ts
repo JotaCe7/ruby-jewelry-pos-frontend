@@ -18,7 +18,7 @@ export function usePersistedState<T>(key: string, initialValue: T) {
     try {
       localStorage.setItem(key, JSON.stringify(value));
     } catch {
-      // Storage unavailable (e.g. private browsing) — preference just won't persist.
+      // Storage unavailable (e.g. private browsing). Preference just won't persist.
     }
   }, [key, value]);
 

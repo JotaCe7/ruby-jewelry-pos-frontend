@@ -13,8 +13,8 @@ const TABS = [
   { to: "/inventory/damages", labelKey: "inventory.damages" },
 ];
 
-// Admin-only screen — see App.tsx: the route itself isn't registered for
-// a Vendedor, since the catalog table shows unit_cost/supplier per
+// Admin-only screen (see App.tsx): the route itself isn't registered for
+// a Seller, since the catalog table shows unit_cost/supplier per
 // product (the POS picker covers their legitimate stock-visibility need
 // without that leak).
 export function InventoryPage() {
