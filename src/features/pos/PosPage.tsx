@@ -236,11 +236,10 @@ export function PosPage() {
 
   // Computed separately from the modals below so a Z closing (which flips
   // registerStatus.is_open to false and swaps this to <RegisterGate>) never
-  // unmounts an already-open ClosingModal/TicketPrint mid-render. This is
-  // the exact bug that bit the admin "close on behalf" flow earlier: clearing
-  // state the modal itself depends on unmounts it before its result can be
-  // read. The modals live outside this conditional, so they only ever
-  // close when the user dismisses them.
+  // unmounts an already-open ClosingModal/TicketPrint mid-render: clearing
+  // state the modal itself depends on would unmount it before its result
+  // can be read. The modals live outside this conditional, so they only
+  // ever close when the user dismisses them.
   let content: ReactNode;
   if (isRegisterLoading) {
     content = <p className="text-blush-100/70">{t("common.loading")}</p>;
