@@ -11,6 +11,7 @@ import { ProductResults, type ViewMode } from "./ProductResults";
 import { SortMenu } from "./SortMenu";
 import type { SortOption } from "./types";
 import { sortOptionToOrdering } from "./types";
+import { usePersistedState } from "./usePersistedState";
 
 export function FlatProductBrowser({
   viewMode,
@@ -22,10 +23,16 @@ export function FlatProductBrowser({
   const { t } = useTranslation();
   const { currentUser } = useAuth();
   const isAdmin = currentUser?.isAdmin ?? false;
-  const [categoryIds, setCategoryIds] = useState<number[]>([]);
-  const [subcategoryIds, setSubcategoryIds] = useState<number[]>([]);
-  const [supplierIds, setSupplierIds] = useState<number[]>([]);
-  const [sort, setSort] = useState<SortOption>({ field: "name", direction: "asc" });
+  const [categoryIds, setCategoryIds] = usePersistedState<number[]>("pos.browse.flat.categoryIds", []);
+  const [subcategoryIds, setSubcategoryIds] = usePersistedState<number[]>(
+    "pos.browse.flat.subcategoryIds",
+    [],
+  );
+  const [supplierIds, setSupplierIds] = usePersistedState<number[]>("pos.browse.flat.supplierIds", []);
+  const [sort, setSort] = usePersistedState<SortOption>("pos.browse.flat.sort", {
+    field: "name",
+    direction: "asc",
+  });
   const [showFilters, setShowFilters] = useState(false);
 
   const { data: categories } = useQuery({
@@ -36,7 +43,7 @@ export function FlatProductBrowser({
     queryKey: ["product-subcategories", "all"],
     queryFn: () => productSubcategoriesApi.list(),
   });
-  // Suppliers are Admin-only on the backend — a Vendedor doesn't get this
+  // Suppliers are Admin-only on the backend. A Seller doesn't get this
   // filter (purchasing/business-relationship data, not needed at the till).
   const { data: suppliers } = useQuery({
     queryKey: ["suppliers"],

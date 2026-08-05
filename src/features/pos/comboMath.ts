@@ -1,4 +1,4 @@
-// Mirrors the backend's ComboProrationService — used only for a live
+// Mirrors the backend's ComboProrationService. Used only for a live
 // preview before submit; the server recomputes authoritatively.
 export function computeProration(weights: number[], totalDiscount: number): number[] {
   const totalWeight = weights.reduce((sum, w) => sum + w, 0);

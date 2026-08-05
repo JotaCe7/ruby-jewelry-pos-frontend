@@ -77,7 +77,7 @@ export function UserFormModal({
 
   const mutation = useMutation({
     mutationFn: () => {
-      // Never send a blank password on edit — that would mean "leave it
+      // Never send a blank password on edit: that would mean "leave it
       // unchanged" to the user, but the backend treats any provided
       // value as a real reset, so an empty string must never reach it.
       const payload = { ...form };
@@ -207,7 +207,7 @@ export function UserFormModal({
                 value={form.gender}
                 onChange={(event) => set("gender", event.target.value as UserAccountWritePayload["gender"])}
               >
-                <option value="">—</option>
+                <option value="">N/A</option>
                 <option value="M">{t("users.genderMale")}</option>
                 <option value="F">{t("users.genderFemale")}</option>
                 <option value="O">{t("users.genderOther")}</option>
@@ -234,7 +234,7 @@ export function UserFormModal({
                   set("document_type", event.target.value as UserAccountWritePayload["document_type"])
                 }
               >
-                <option value="">—</option>
+                <option value="">N/A</option>
                 <option value="DNI">DNI</option>
                 <option value="CE">CE</option>
               </select>

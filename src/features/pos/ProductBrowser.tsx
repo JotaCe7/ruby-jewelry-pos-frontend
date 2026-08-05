@@ -1,4 +1,3 @@
-import { useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import type { ProductEntry } from "../../api/types";
@@ -6,14 +5,15 @@ import { FlatProductBrowser } from "./FlatProductBrowser";
 import { FolderProductBrowser } from "./FolderProductBrowser";
 import type { ViewMode } from "./ProductResults";
 import { SkuScanInput } from "./SkuScanInput";
+import { usePersistedState } from "./usePersistedState";
 
 type BrowseMode = "folder" | "flat" | "scan";
 
 export function ProductBrowser({ onSelectProduct }: { onSelectProduct: (product: ProductEntry) => void }) {
   const { t } = useTranslation();
-  const [mode, setMode] = useState<BrowseMode>("folder");
-  const [viewMode, setViewMode] = useState<ViewMode>("grid");
-  const [showOutOfStock, setShowOutOfStock] = useState(false);
+  const [mode, setMode] = usePersistedState<BrowseMode>("pos.browse.mode", "folder");
+  const [viewMode, setViewMode] = usePersistedState<ViewMode>("pos.browse.viewMode", "grid");
+  const [showOutOfStock, setShowOutOfStock] = usePersistedState("pos.browse.showOutOfStock", false);
 
   const MODES: Array<{ key: BrowseMode; labelKey: string }> = [
     { key: "folder", labelKey: "pos.modeFolder" },

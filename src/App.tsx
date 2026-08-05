@@ -27,11 +27,11 @@ const ADMIN_NAV_ITEMS: Array<{ to: string; labelKey: string }> = [
   { to: "/users", labelKey: "nav.users" },
 ];
 
-// A Vendedor mostly just needs POS. Inventario is deliberately left out —
-// its catalog table shows unit_cost and supplier per product, which is
-// exactly the margin/business-relationship data kept out of Finanzas/
-// Proveedores for this role; the POS picker already covers the legitimate
-// need (stock while selling) without that leak. Ventas IS included — a
+// A Seller mostly just needs POS. Inventory is deliberately left out.
+// Its catalog table shows unit_cost and supplier per product, which is
+// exactly the margin/business-relationship data kept out of Finance/
+// Suppliers for this role; the POS picker already covers the legitimate
+// need (stock while selling) without that leak. Sales IS included: a
 // seller needs to reprint or void their own recent tickets, and the
 // backend scopes that screen to their own sales only.
 const SELLER_NAV_ITEMS: Array<{ to: string; labelKey: string }> = [

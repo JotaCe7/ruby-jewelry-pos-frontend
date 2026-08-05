@@ -5,7 +5,7 @@ interface UnsavedChangesContextValue {
   isDirty: boolean;
   setDirty: (dirty: boolean) => void;
   // Callers pass their own translated message (this context has no
-  // access to i18next's t() outside a component render) — returns true
+  // access to i18next's t() outside a component render). Returns true
   // if it's safe to proceed (nothing dirty, or the user confirmed).
   confirmDiscard: (message: string) => boolean;
 }

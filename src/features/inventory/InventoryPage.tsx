@@ -4,15 +4,17 @@ import { useTranslation } from "react-i18next";
 import { ProductsPage } from "./ProductsPage";
 import { EntriesPage } from "./EntriesPage";
 import { AuditsPage } from "./AuditsPage";
+import { DamagesPage } from "./DamagesPage";
 
 const TABS = [
   { to: "/inventory", labelKey: "inventory.products" },
   { to: "/inventory/entries", labelKey: "inventory.entries" },
   { to: "/inventory/audits", labelKey: "inventory.audits" },
+  { to: "/inventory/damages", labelKey: "inventory.damages" },
 ];
 
-// Admin-only screen — see App.tsx: the route itself isn't registered for
-// a Vendedor, since the catalog table shows unit_cost/supplier per
+// Admin-only screen (see App.tsx): the route itself isn't registered for
+// a Seller, since the catalog table shows unit_cost/supplier per
 // product (the POS picker covers their legitimate stock-visibility need
 // without that leak).
 export function InventoryPage() {
@@ -39,6 +41,7 @@ export function InventoryPage() {
         <Route index element={<ProductsPage />} />
         <Route path="entries" element={<EntriesPage />} />
         <Route path="audits" element={<AuditsPage />} />
+        <Route path="damages" element={<DamagesPage />} />
       </Routes>
     </div>
   );

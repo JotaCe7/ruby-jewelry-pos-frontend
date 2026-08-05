@@ -5,7 +5,7 @@ import { useTranslation } from "react-i18next";
 import { openRegister } from "../../api/pos";
 import type { RegisterStatus } from "../../api/types";
 
-// Blocks POS access until the caller's own register is open — a sale can
+// Blocks POS access until the caller's own register is open. A sale can
 // never be created (or a draft finalized) with the register closed, so
 // there's no point letting the user into the ticket UI before this.
 export function RegisterGate({ status }: { status: RegisterStatus }) {

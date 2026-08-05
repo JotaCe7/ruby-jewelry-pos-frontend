@@ -18,7 +18,7 @@ import { useUnsavedChanges } from "../../contexts/UnsavedChangesContext";
 import { BarcodeLabelModal } from "./BarcodeLabelModal";
 
 // min_stock is kept as a raw string while editing (like suggested_price
-// already is) and only coerced to a number at submit time — a
+// already is) and only coerced to a number at submit time. A
 // controlled <input type="number"> bound directly to a number state
 // snaps back to "0" the instant the field is cleared to retype a value,
 // since Number("") is 0, not NaN.
@@ -66,7 +66,7 @@ export function ProductsPage() {
   const { setDirty } = useUnsavedChanges();
 
   // Marks the whole app as having unsaved work for as long as this
-  // panel is open — cleared on unmount too, so navigating away through
+  // panel is open. It's cleared on unmount too, so navigating away through
   // any path other than the guarded nav links never leaves a stale flag.
   useEffect(() => {
     setDirty(isCreating);
@@ -179,17 +179,17 @@ export function ProductsPage() {
         >
           <div>
             <label className={labelClass}>{t("inventory.code")}</label>
-            {/* Never editable (backend: Product.sku has editable=False) —
-                assigned automatically from the subcategory's hierarchical
+            {/* Never editable (backend: Product.sku has editable=False).
+                Assigned automatically from the subcategory's hierarchical
                 code the moment the product is saved, so there's nothing
                 to type here before that happens. Shown first, matching
                 Category/Subcategory's own create forms. */}
             <p className={`${fieldClass} font-mono text-blush-100/70`} title={t("catalogs.codePreviewHint")}>
               {editingId
-                ? (products?.find((product) => product.id === editingId)?.sku ?? "—")
+                ? (products?.find((product) => product.id === editingId)?.sku ?? "N/A")
                 : form.subcategory
                   ? (previewCode ?? "…")
-                  : "—"}
+                  : "N/A"}
             </p>
           </div>
 
@@ -308,7 +308,7 @@ export function ProductsPage() {
             {/* type="text" + inputMode, not type="number": several mobile
                 browsers apply their own native number-field validation on
                 top of React's controlled value, which can restore "0" on
-                blur even when the JS state is correctly "" — this sidesteps
+                blur even when the JS state is correctly "". This sidesteps
                 that entirely while still bringing up a numeric keypad. */}
             <input
               type="text"
@@ -322,7 +322,7 @@ export function ProductsPage() {
               }}
               // Selects the pre-filled "0" on focus so clicking in and
               // pressing any key (Backspace, Del, or just typing a digit)
-              // replaces it immediately — no need to know the cursor
+              // replaces it immediately. No need to know the cursor
               // lands after it, where forward-Delete has nothing to do.
               onFocus={(event) => event.target.select()}
             />
@@ -399,7 +399,7 @@ export function ProductsPage() {
                   <td className="py-2">
                     {product.category_name} / {product.subcategory_name}
                   </td>
-                  <td className="py-2">{product.supplier_name ?? "—"}</td>
+                  <td className="py-2">{product.supplier_name ?? "N/A"}</td>
                   <td className="py-2 text-right">S/ {product.unit_cost}</td>
                   <td className="py-2 text-right">S/ {product.suggested_price}</td>
                   <td className={`py-2 text-right ${product.needs_restock ? "font-semibold text-red-400" : ""}`}>

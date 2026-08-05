@@ -8,7 +8,7 @@ export function TodayView() {
   const { data, isLoading } = useQuery({
     queryKey: ["dashboard-today"],
     queryFn: fetchTodaySnapshot,
-    // Live view — the Admin is checking this while walking the floor, so
+    // Live view: the Admin is checking this while walking the floor, so
     // keep it fresh without requiring a manual refresh.
     refetchInterval: 30_000,
   });

@@ -47,7 +47,7 @@ export function PaymentMethodsPage() {
     onSuccess: invalidate,
   });
 
-  // Exclusive on the backend — setting one clears every other one, so
+  // Exclusive on the backend: setting one clears every other one, so
   // there's nothing to do here besides send the request for this row.
   const setDefaultMutation = useMutation({
     mutationFn: (method: PaymentMethodEntry) => paymentMethodsApi.update(method.id, { is_default: true }),
