@@ -394,7 +394,10 @@ export function PosPage() {
             </CartContext.Provider>
           </div>
           <div
-            className={`${activePanel === "ticket" ? "block" : "hidden"} max-h-[75vh] md:block md:w-96 md:border-l md:border-ruby-800 md:pl-4`}
+            // pb-20 keeps the totals/Registrar Venta footer clear of the
+            // fixed "Seguir buscando" button below, which floats over
+            // this same bottom-right corner on mobile.
+            className={`${activePanel === "ticket" ? "block" : "hidden"} max-h-[75vh] pb-20 md:block md:w-96 md:border-l md:border-ruby-800 md:pb-0 md:pl-4`}
           >
             <TicketPanel
               lines={lines}

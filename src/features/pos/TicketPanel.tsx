@@ -63,20 +63,25 @@ export function TicketPanel({
     return groups;
   }, [lines]);
 
-  function lineFinalPrice(line: DraftLine): number {
+  function lineDiscount(line: DraftLine): number {
     if (line.movementType !== "SALE") return 0;
-    const subtotal = Number(line.unitPrice) * line.quantity;
-    let discount = Number(line.discount) || 0;
     if (line.comboKey) {
       const group = comboGroups[line.comboKey];
       const weights = group.map((l) => Number(l.unitPrice) * l.quantity);
       const idx = group.findIndex((l) => l.key === line.key);
-      discount = computeProration(weights, Number(group[0].discount) || 0)[idx];
+      return computeProration(weights, Number(group[0].discount) || 0)[idx];
     }
-    return Math.max(subtotal - discount, 0);
+    return Number(line.discount) || 0;
+  }
+
+  function lineFinalPrice(line: DraftLine): number {
+    if (line.movementType !== "SALE") return 0;
+    const subtotal = Number(line.unitPrice) * line.quantity;
+    return Math.max(subtotal - lineDiscount(line), 0);
   }
 
   const total = lines.reduce((sum, line) => sum + lineFinalPrice(line), 0);
+  const totalDiscount = lines.reduce((sum, line) => sum + lineDiscount(line), 0);
 
   const fieldClass = "rounded border border-ruby-700 bg-ruby-900 px-2 py-1 text-sm text-blush-100";
 
@@ -293,6 +298,11 @@ export function TicketPanel({
       </div>
 
       <div className="mt-3 border-t border-ruby-800 pt-3">
+        {totalDiscount > 0 && (
+          <p className="text-right text-sm text-blush-100/70">
+            {t("pos.totalDiscount")}: S/ {totalDiscount.toFixed(2)}
+          </p>
+        )}
         <p className="mb-2 text-right text-lg font-semibold text-blush-200">
           {t("pos.total")}: S/ {total.toFixed(2)}
         </p>
