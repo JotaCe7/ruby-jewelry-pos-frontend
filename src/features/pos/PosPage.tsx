@@ -378,7 +378,11 @@ export function PosPage() {
 
         <div className="flex flex-col gap-4 md:flex-row">
           <div
-            className={`${activePanel === "browse" ? "block" : "hidden"} max-h-[75vh] flex-1 overflow-y-auto md:block`}
+            // pb-24 keeps the last row clear of the fixed cart button
+            // below on mobile (dvh, not vh, so this tracks the actual
+            // visible area under the browser's own address/nav bars
+            // instead of the viewport size with them hidden).
+            className={`${activePanel === "browse" ? "block" : "hidden"} max-h-[75dvh] flex-1 overflow-y-auto pb-24 md:block md:pb-0`}
           >
             <CartContext.Provider
               value={{
@@ -394,10 +398,14 @@ export function PosPage() {
             </CartContext.Provider>
           </div>
           <div
-            // pb-20 keeps the totals/Registrar Venta footer clear of the
-            // fixed "Seguir buscando" button below, which floats over
-            // this same bottom-right corner on mobile.
-            className={`${activePanel === "ticket" ? "block" : "hidden"} max-h-[75vh] pb-20 md:block md:w-96 md:border-l md:border-ruby-800 md:pb-0 md:pl-4`}
+            // max-height alone never actually constrains a flex child
+            // sized with h-full: with the default overflow, content just
+            // spills past it instead of the box clipping/scrolling. The
+            // explicit overflow-y-auto here is what makes the cap (and
+            // the pb-28 clearance it reserves for the fixed "Seguir
+            // buscando" button below, which floats over this same
+            // bottom-right corner on mobile) actually take effect.
+            className={`${activePanel === "ticket" ? "block" : "hidden"} max-h-[75dvh] overflow-y-auto pb-28 md:block md:w-96 md:border-l md:border-ruby-800 md:pb-0 md:pl-4`}
           >
             <TicketPanel
               lines={lines}
