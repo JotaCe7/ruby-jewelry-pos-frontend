@@ -7,7 +7,7 @@ interface CartContextValue {
   incrementProduct: (product: ProductEntry) => void;
   decrementProduct: (productId: number) => void;
   removeProduct: (productId: number) => void;
-  // The list view shows the +/-/eliminar detail row for at most one
+  // The list view shows the +/-/remove detail row for at most one
   // product at a time; null means every row is collapsed.
   expandedProductId: number | null;
   setExpandedProductId: (productId: number | null) => void;
