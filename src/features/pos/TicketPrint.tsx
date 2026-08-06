@@ -57,7 +57,11 @@ export function TicketPrint({ sale, onClose }: { sale: SaleEntry; onClose: () =>
         </div>
 
         <div className="overflow-y-auto p-4">
-          <div id="print-ticket" ref={ticketRef} className="mx-auto w-full max-w-[80mm] text-black">
+          <div
+            id="print-ticket"
+            ref={ticketRef}
+            className="mx-auto w-full max-w-[80mm] bg-white p-2 text-black"
+          >
             <div className="mb-2 text-center">
               <p className="font-bold">{t("app.name")}</p>
               {document && (
