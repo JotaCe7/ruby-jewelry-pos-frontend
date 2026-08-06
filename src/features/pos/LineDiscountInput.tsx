@@ -16,13 +16,12 @@ export function LineDiscountInput({
   onChange: (discount: string) => void;
 }) {
   const [text, setText] = useState(isZero(discount) ? "" : discount);
-  // Gated on focus, not on whether the field is currently empty: a
-  // discount can also change for reasons that have nothing to do with
-  // this field being edited (e.g. checking the pack-promo checkbox
-  // recomputes it), and that must still show up even though the field
-  // has been sitting empty since it was never touched. Only ignore the
-  // prop while the user is actively typing here, so an external change
-  // never interrupts an in-progress keystroke (e.g. "0" on its way to "0.5").
+  // Tracks whether the seller is actively typing here. The sync effect
+  // below only skips picking up an external discount change (e.g.
+  // checking the pack-promo checkbox, which can update a field that's
+  // been sitting empty since it was never touched) while a keystroke is
+  // still in progress (e.g. "0" on its way to "0.5"), never once focus
+  // has moved on.
   const isFocused = useRef(false);
 
   useEffect(() => {

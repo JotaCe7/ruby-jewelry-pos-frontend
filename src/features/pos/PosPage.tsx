@@ -31,14 +31,14 @@ function defaultLineFlags(product: ProductEntry): Pick<DraftLine, "useTierPrice"
 }
 
 // The backend only ever stores the resulting unit_price/discount numbers,
-// never which checkbox produced them, so a reloaded draft has to work
-// backwards from those numbers instead of assuming the product's default
-// combination. Otherwise a deliberate uncheck would silently revert the
-// moment the tab reloads. tierPrice/flatPrice diverging at this quantity
-// is what makes the tier's state readable from unit_price at all; same
-// idea for the pack's exact savings inside discount. When neither number
-// can tell the two states apart (e.g. the quantity hasn't reached either
-// threshold yet), there's nothing to contradict the product's default.
+// never which checkbox produced them, so reconstructing a draft's
+// checkbox state means working backwards from those numbers rather than
+// the product's default combination. tierPrice/flatPrice diverging at
+// this quantity is what makes the tier's state readable from unit_price
+// at all; the pack's exact savings inside discount work the same way.
+// When neither number can tell the two states apart (e.g. the quantity
+// hasn't reached either threshold yet), the product's default is the
+// only reasonable answer.
 function inferLineFlags(
   product: ProductEntry,
   quantity: number,
@@ -97,15 +97,13 @@ function linesToPayload(lines: DraftLine[], paymentMethodId: number | null): Dra
 }
 
 // The one line the product browser's own +/- controls find and adjust for
-// a product. GIFT and combo lines are excluded because they represent a
-// genuinely different intent (giving some away, or a shared group
-// discount), not just a pricing detail of the same sale. Those can only
-// change from the ticket panel. Unchecking the tier/pack checkbox, or
-// typing an extra discount, is NOT that kind of customization: it's a
-// normal pricing choice the increment/decrement handlers already respect
-// (they recompute unitPrice/discount from whatever useTierPrice/
-// usePackPrice/extraDiscount the line already has), so none of that
-// disqualifies a line here.
+// a product: a plain SALE line outside any combo. GIFT and combo lines
+// are excluded since they represent a different intent (giving some
+// away, or a shared group discount) that only the ticket panel edits.
+// Which tier/pack checkbox is active, and any extra discount, don't
+// factor in here: the increment/decrement handlers recompute
+// unitPrice/discount from whatever useTierPrice/usePackPrice/
+// extraDiscount the line already carries, for any combination of them.
 function isDefaultLine(line: DraftLine, productId: number): boolean {
   return line.product.id === productId && line.movementType === "SALE" && line.comboKey === null;
 }
