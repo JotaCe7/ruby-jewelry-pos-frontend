@@ -8,7 +8,7 @@ import { computeProration } from "./comboMath";
 import { LineDiscountInput } from "./LineDiscountInput";
 import { LineQuantityInput } from "./LineQuantityInput";
 import type { DraftLine } from "./types";
-import { applicableUnitPrice } from "./types";
+import { applicableUnitPrice, packPriceDiscount } from "./types";
 
 export function TicketPanel({
   lines,
@@ -114,7 +114,11 @@ export function TicketPanel({
               const unitPrice = line.useTierPrice
                 ? applicableUnitPrice(line.product, quantity)
                 : line.product.suggested_price;
-              onUpdateLine(line.key, { quantity, unitPrice });
+              const changes: Partial<DraftLine> = { quantity, unitPrice };
+              if (line.usePackPrice && !line.comboKey) {
+                changes.discount = packPriceDiscount(line.product, quantity);
+              }
+              onUpdateLine(line.key, changes);
             }}
           />
 
@@ -144,6 +148,26 @@ export function TicketPanel({
                     }}
                   />
                   {t("pos.wholesalePrice")}
+                </label>
+              )}
+
+              {line.product.pack_price && !line.comboKey && (
+                <label className="flex items-center gap-1 text-xs text-blush-100/70">
+                  <input
+                    type="checkbox"
+                    checked={line.usePackPrice}
+                    onChange={(event) => {
+                      const usePackPrice = event.target.checked;
+                      onUpdateLine(line.key, {
+                        usePackPrice,
+                        discount: usePackPrice ? packPriceDiscount(line.product, line.quantity) : "0.00",
+                      });
+                    }}
+                  />
+                  {t("pos.packPrice", {
+                    quantity: line.product.pack_price.pack_quantity,
+                    price: line.product.pack_price.pack_price,
+                  })}
                 </label>
               )}
 

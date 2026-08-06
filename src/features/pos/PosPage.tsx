@@ -17,7 +17,7 @@ import { ProductBrowser } from "./ProductBrowser";
 import { RegisterGate } from "./RegisterGate";
 import { TicketPanel } from "./TicketPanel";
 import { TicketPrint } from "./TicketPrint";
-import { applicableUnitPrice, type DraftLine } from "./types";
+import { applicableUnitPrice, packPriceDiscount, type DraftLine } from "./types";
 
 function lineFromServer(line: DraftSaleLineEntry): DraftLine {
   return {
@@ -27,6 +27,7 @@ function lineFromServer(line: DraftSaleLineEntry): DraftLine {
     quantity: line.quantity,
     unitPrice: line.unit_price,
     useTierPrice: true,
+    usePackPrice: true,
     discount: line.discount,
     comboKey: line.combo_key || null,
   };
@@ -47,14 +48,20 @@ function linesToPayload(lines: DraftLine[], paymentMethodId: number | null): Dra
 
 // A line is only safe to bump/adjust from the product browser while it's
 // still in this untouched shape. A customized line (GIFT, combo, manual
-// discount) must only ever be edited from the ticket panel.
+// discount) must only ever be edited from the ticket panel. The discount
+// itself can't just be compared to "0.00" any more, since a pack promo
+// makes a non-zero discount just as "untouched" as a zero one; comparing
+// against what the pack formula would currently produce is what actually
+// tells apart an auto-managed discount from a hand-typed override.
 function isDefaultLine(line: DraftLine, productId: number): boolean {
+  const autoDiscount = line.usePackPrice ? packPriceDiscount(line.product, line.quantity) : "0.00";
   return (
     line.product.id === productId &&
     line.movementType === "SALE" &&
     line.comboKey === null &&
-    line.discount === "0.00" &&
-    line.useTierPrice
+    line.useTierPrice &&
+    line.usePackPrice &&
+    line.discount === autoDiscount
   );
 }
 
@@ -154,7 +161,12 @@ export function PosPage() {
       if (existingIndex !== -1) {
         const existing = current[existingIndex];
         const quantity = existing.quantity + 1;
-        const updated = { ...existing, quantity, unitPrice: applicableUnitPrice(product, quantity) };
+        const updated = {
+          ...existing,
+          quantity,
+          unitPrice: applicableUnitPrice(product, quantity),
+          discount: packPriceDiscount(product, quantity),
+        };
         return current.map((line, index) => (index === existingIndex ? updated : line));
       }
       return [
@@ -166,7 +178,8 @@ export function PosPage() {
           quantity: 1,
           unitPrice: product.suggested_price,
           useTierPrice: true,
-          discount: "0.00",
+          usePackPrice: true,
+          discount: packPriceDiscount(product, 1),
           comboKey: null,
         },
       ];
@@ -182,7 +195,12 @@ export function PosPage() {
         return current.filter((_, index) => index !== existingIndex);
       }
       const quantity = existing.quantity - 1;
-      const updated = { ...existing, quantity, unitPrice: applicableUnitPrice(existing.product, quantity) };
+      const updated = {
+        ...existing,
+        quantity,
+        unitPrice: applicableUnitPrice(existing.product, quantity),
+        discount: packPriceDiscount(existing.product, quantity),
+      };
       return current.map((line, index) => (index === existingIndex ? updated : line));
     });
   }

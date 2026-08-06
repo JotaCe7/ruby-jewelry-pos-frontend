@@ -17,6 +17,7 @@ import { ImagePicker } from "../../components/ImagePicker";
 import { useUnsavedChanges } from "../../contexts/UnsavedChangesContext";
 import { BarcodeLabelModal } from "./BarcodeLabelModal";
 import { CopyPriceTiersModal } from "./CopyPriceTiersModal";
+import { PackPriceEditor } from "./PackPriceEditor";
 import { PriceTiersEditor } from "./PriceTiersEditor";
 
 // min_stock is kept as a raw string while editing (like suggested_price
@@ -67,20 +68,25 @@ export function ProductsPage() {
   const [saveError, setSaveError] = useState<string | null>(null);
   const [selectedIds, setSelectedIds] = useState<number[]>([]);
   const [showCopyModal, setShowCopyModal] = useState(false);
-  // Lifted out of PriceTiersEditor so Guardar/Cancelar can warn before
-  // silently discarding a typed-but-not-yet-added tier row.
+  // Lifted out of PriceTiersEditor/PackPriceEditor so Guardar/Cancelar can
+  // warn before silently discarding a typed-but-not-yet-added row.
   const [tierDraftMinQuantity, setTierDraftMinQuantity] = useState("");
   const [tierDraftUnitPrice, setTierDraftUnitPrice] = useState("");
+  const [packDraftQuantity, setPackDraftQuantity] = useState("");
+  const [packDraftPrice, setPackDraftPrice] = useState("");
   const { setDirty } = useUnsavedChanges();
 
-  function confirmDiscardTierDraft() {
-    if (!tierDraftMinQuantity && !tierDraftUnitPrice) return true;
+  function confirmDiscardPendingDrafts() {
+    const hasDraft = tierDraftMinQuantity || tierDraftUnitPrice || packDraftQuantity || packDraftPrice;
+    if (!hasDraft) return true;
     return confirm(t("inventory.priceTierDraftDiscardConfirm"));
   }
 
-  function resetTierDraft() {
+  function resetDrafts() {
     setTierDraftMinQuantity("");
     setTierDraftUnitPrice("");
+    setPackDraftQuantity("");
+    setPackDraftPrice("");
   }
 
   // Marks the whole app as having unsaved work for as long as this
@@ -125,7 +131,7 @@ export function ProductsPage() {
         setForm(emptyForm);
         setIsCreating(false);
         setEditingId(null);
-        resetTierDraft();
+        resetDrafts();
       }
       setSaveError(null);
       invalidate();
@@ -160,7 +166,7 @@ export function ProductsPage() {
     setEditingId(product.id);
     setIsCreating(true);
     setSaveError(null);
-    resetTierDraft();
+    resetDrafts();
     setForm({
       barcode: product.barcode,
       base_model: product.base_model,
@@ -188,7 +194,7 @@ export function ProductsPage() {
               setForm(emptyForm);
               setEditingId(null);
               setSaveError(null);
-              resetTierDraft();
+              resetDrafts();
               setIsCreating(true);
             }}
           >
@@ -202,7 +208,7 @@ export function ProductsPage() {
           className="mb-6 grid max-w-4xl grid-cols-2 gap-3 rounded border border-ruby-800 bg-ruby-900/50 p-4 sm:grid-cols-4"
           onSubmit={(event) => {
             event.preventDefault();
-            if (!confirmDiscardTierDraft()) return;
+            if (!confirmDiscardPendingDrafts()) return;
             saveMutation.mutate();
           }}
         >
@@ -382,6 +388,20 @@ export function ProductsPage() {
             )}
           </div>
 
+          <div className="col-span-2 sm:col-span-4">
+            {editingId ? (
+              <PackPriceEditor
+                productId={editingId}
+                draftQuantity={packDraftQuantity}
+                draftPrice={packDraftPrice}
+                onDraftQuantityChange={setPackDraftQuantity}
+                onDraftPriceChange={setPackDraftPrice}
+              />
+            ) : (
+              <p className="text-xs text-blush-100/50">{t("inventory.priceTiersSaveFirst")}</p>
+            )}
+          </div>
+
           {saveError && (
             <p className="col-span-2 text-sm text-red-400 sm:col-span-4">{saveError}</p>
           )}
@@ -398,11 +418,11 @@ export function ProductsPage() {
               type="button"
               className="text-sm text-blush-100/60"
               onClick={() => {
-                if (!confirmDiscardTierDraft()) return;
+                if (!confirmDiscardPendingDrafts()) return;
                 setIsCreating(false);
                 setEditingId(null);
                 setSaveError(null);
-                resetTierDraft();
+                resetDrafts();
               }}
             >
               {t("common.cancel")}

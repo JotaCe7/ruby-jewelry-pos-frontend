@@ -7,6 +7,7 @@ import type {
   InventoryDamageWritePayload,
   InventoryEntryEntry,
   InventoryEntryWritePayload,
+  PackPriceEntry,
   PriceTierEntry,
   ProductEntry,
   ProductWritePayload,
@@ -25,6 +26,10 @@ export async function copyPriceTiers(sourceProductId: number, targetProductIds: 
     target_products: targetProductIds,
   });
 }
+export const packPricesApi = createCrudApi<
+  PackPriceEntry,
+  { product: number; pack_quantity: number; pack_price: string }
+>("/inventory/pack-prices/");
 export const inventoryEntriesApi = createCrudApi<InventoryEntryEntry, InventoryEntryWritePayload>(
   "/inventory/entries/",
 );
