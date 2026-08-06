@@ -30,23 +30,54 @@ function defaultLineFlags(product: ProductEntry): Pick<DraftLine, "useTierPrice"
   return { useTierPrice: true, usePackPrice: true };
 }
 
+// The backend only ever stores the resulting unit_price/discount numbers,
+// never which checkbox produced them, so a reloaded draft has to work
+// backwards from those numbers instead of assuming the product's default
+// combination. Otherwise a deliberate uncheck would silently revert the
+// moment the tab reloads. tierPrice/flatPrice diverging at this quantity
+// is what makes the tier's state readable from unit_price at all; same
+// idea for the pack's exact savings inside discount. When neither number
+// can tell the two states apart (e.g. the quantity hasn't reached either
+// threshold yet), there's nothing to contradict the product's default.
+function inferLineFlags(
+  product: ProductEntry,
+  quantity: number,
+  unitPrice: string,
+  discount: string,
+): Pick<DraftLine, "useTierPrice" | "usePackPrice" | "extraDiscount"> {
+  const tierPrice = applicableUnitPrice(product, quantity);
+  const flatPrice = product.suggested_price;
+  const packAuto = Number(packPriceDiscount(product, quantity));
+
+  const tierDistinguishable = product.price_tiers.length > 0 && tierPrice !== flatPrice;
+  const packDistinguishable = !!product.pack_price && packAuto > 0;
+
+  let useTierPrice: boolean;
+  let usePackPrice: boolean;
+  if (tierDistinguishable) {
+    useTierPrice = unitPrice === tierPrice;
+    usePackPrice = !useTierPrice && packDistinguishable && Number(discount) >= packAuto;
+  } else if (packDistinguishable) {
+    useTierPrice = false;
+    usePackPrice = Number(discount) >= packAuto;
+  } else {
+    ({ useTierPrice, usePackPrice } = defaultLineFlags(product));
+  }
+
+  const autoDiscount = usePackPrice ? packAuto : 0;
+  const extraDiscount = Math.max(0, Number(discount) - autoDiscount).toFixed(2);
+  return { useTierPrice, usePackPrice, extraDiscount };
+}
+
 function lineFromServer(line: DraftSaleLineEntry): DraftLine {
-  const defaults = defaultLineFlags(line.product_detail);
-  const autoDiscount = defaults.usePackPrice
-    ? Number(packPriceDiscount(line.product_detail, line.quantity))
-    : 0;
-  // The backend only ever stores the combined total, so a reloaded draft
-  // can only guess at the split: whatever isn't explained by the pack
-  // formula is treated as the seller's own extra.
-  const extraDiscount = Math.max(0, Number(line.discount) - autoDiscount).toFixed(2);
+  const flags = inferLineFlags(line.product_detail, line.quantity, line.unit_price, line.discount);
   return {
     key: `line-${line.id}`,
     product: line.product_detail,
     movementType: line.movement_type,
     quantity: line.quantity,
     unitPrice: line.unit_price,
-    ...defaults,
-    extraDiscount,
+    ...flags,
     discount: line.discount,
     comboKey: line.combo_key || null,
   };
@@ -65,24 +96,18 @@ function linesToPayload(lines: DraftLine[], paymentMethodId: number | null): Dra
   }));
 }
 
-// A line is only safe to bump/adjust from the product browser while it's
-// still in this untouched shape. A customized line (GIFT, combo, manual
-// discount) must only ever be edited from the ticket panel. The discount
-// itself can't just be compared to "0.00" any more, since a pack promo
-// makes a non-zero discount just as "untouched" as a zero one; comparing
-// against what the pack formula would currently produce is what actually
-// tells apart an auto-managed discount from a hand-typed override.
+// The one line the product browser's own +/- controls find and adjust for
+// a product. GIFT and combo lines are excluded because they represent a
+// genuinely different intent (giving some away, or a shared group
+// discount), not just a pricing detail of the same sale. Those can only
+// change from the ticket panel. Unchecking the tier/pack checkbox, or
+// typing an extra discount, is NOT that kind of customization: it's a
+// normal pricing choice the increment/decrement handlers already respect
+// (they recompute unitPrice/discount from whatever useTierPrice/
+// usePackPrice/extraDiscount the line already has), so none of that
+// disqualifies a line here.
 function isDefaultLine(line: DraftLine, productId: number): boolean {
-  const defaults = defaultLineFlags(line.product);
-  const autoDiscount = defaults.usePackPrice ? packPriceDiscount(line.product, line.quantity) : "0.00";
-  return (
-    line.product.id === productId &&
-    line.movementType === "SALE" &&
-    line.comboKey === null &&
-    line.useTierPrice === defaults.useTierPrice &&
-    line.usePackPrice === defaults.usePackPrice &&
-    line.discount === autoDiscount
-  );
+  return line.product.id === productId && line.movementType === "SALE" && line.comboKey === null;
 }
 
 export function PosPage() {
