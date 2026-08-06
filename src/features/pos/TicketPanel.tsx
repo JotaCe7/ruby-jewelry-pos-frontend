@@ -139,11 +139,18 @@ export function TicketPanel({
                     checked={line.useTierPrice}
                     onChange={(event) => {
                       const useTierPrice = event.target.checked;
+                      // Mutually exclusive with the pack promo: stacking
+                      // both would discount the pack's savings against the
+                      // flat price while the line is already charging the
+                      // tier's lower price, undercutting either promotion
+                      // applied on its own.
                       onUpdateLine(line.key, {
                         useTierPrice,
                         unitPrice: useTierPrice
                           ? applicableUnitPrice(line.product, line.quantity)
                           : line.product.suggested_price,
+                        usePackPrice: useTierPrice ? false : line.usePackPrice,
+                        discount: useTierPrice ? "0.00" : line.discount,
                       });
                     }}
                   />
@@ -158,9 +165,13 @@ export function TicketPanel({
                     checked={line.usePackPrice}
                     onChange={(event) => {
                       const usePackPrice = event.target.checked;
+                      // Mutually exclusive with the wholesale tier; see the
+                      // tier checkbox's own handler for why.
                       onUpdateLine(line.key, {
                         usePackPrice,
                         discount: usePackPrice ? packPriceDiscount(line.product, line.quantity) : "0.00",
+                        useTierPrice: usePackPrice ? false : line.useTierPrice,
+                        unitPrice: usePackPrice ? line.product.suggested_price : line.unitPrice,
                       });
                     }}
                   />

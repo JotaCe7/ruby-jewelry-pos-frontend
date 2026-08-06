@@ -19,6 +19,17 @@ import { TicketPanel } from "./TicketPanel";
 import { TicketPrint } from "./TicketPrint";
 import { applicableUnitPrice, packPriceDiscount, type DraftLine } from "./types";
 
+// The tier and pack checkboxes are mutually exclusive (stacking both would
+// discount the pack's savings against the flat price while the tier's
+// lower price is already active). A product with both configured defaults
+// to the tier, leaving the pack promo an explicit opt-in.
+function defaultLineFlags(product: ProductEntry): Pick<DraftLine, "useTierPrice" | "usePackPrice"> {
+  if (product.pack_price && product.price_tiers.length > 0) {
+    return { useTierPrice: true, usePackPrice: false };
+  }
+  return { useTierPrice: true, usePackPrice: true };
+}
+
 function lineFromServer(line: DraftSaleLineEntry): DraftLine {
   return {
     key: `line-${line.id}`,
@@ -26,8 +37,7 @@ function lineFromServer(line: DraftSaleLineEntry): DraftLine {
     movementType: line.movement_type,
     quantity: line.quantity,
     unitPrice: line.unit_price,
-    useTierPrice: true,
-    usePackPrice: true,
+    ...defaultLineFlags(line.product_detail),
     discount: line.discount,
     comboKey: line.combo_key || null,
   };
@@ -54,13 +64,14 @@ function linesToPayload(lines: DraftLine[], paymentMethodId: number | null): Dra
 // against what the pack formula would currently produce is what actually
 // tells apart an auto-managed discount from a hand-typed override.
 function isDefaultLine(line: DraftLine, productId: number): boolean {
-  const autoDiscount = line.usePackPrice ? packPriceDiscount(line.product, line.quantity) : "0.00";
+  const defaults = defaultLineFlags(line.product);
+  const autoDiscount = defaults.usePackPrice ? packPriceDiscount(line.product, line.quantity) : "0.00";
   return (
     line.product.id === productId &&
     line.movementType === "SALE" &&
     line.comboKey === null &&
-    line.useTierPrice &&
-    line.usePackPrice &&
+    line.useTierPrice === defaults.useTierPrice &&
+    line.usePackPrice === defaults.usePackPrice &&
     line.discount === autoDiscount
   );
 }
@@ -164,11 +175,12 @@ export function PosPage() {
         const updated = {
           ...existing,
           quantity,
-          unitPrice: applicableUnitPrice(product, quantity),
-          discount: packPriceDiscount(product, quantity),
+          unitPrice: existing.useTierPrice ? applicableUnitPrice(product, quantity) : product.suggested_price,
+          discount: existing.usePackPrice ? packPriceDiscount(product, quantity) : "0.00",
         };
         return current.map((line, index) => (index === existingIndex ? updated : line));
       }
+      const defaults = defaultLineFlags(product);
       return [
         ...current,
         {
@@ -177,9 +189,8 @@ export function PosPage() {
           movementType: "SALE",
           quantity: 1,
           unitPrice: product.suggested_price,
-          useTierPrice: true,
-          usePackPrice: true,
-          discount: packPriceDiscount(product, 1),
+          ...defaults,
+          discount: defaults.usePackPrice ? packPriceDiscount(product, 1) : "0.00",
           comboKey: null,
         },
       ];
@@ -198,8 +209,10 @@ export function PosPage() {
       const updated = {
         ...existing,
         quantity,
-        unitPrice: applicableUnitPrice(existing.product, quantity),
-        discount: packPriceDiscount(existing.product, quantity),
+        unitPrice: existing.useTierPrice
+          ? applicableUnitPrice(existing.product, quantity)
+          : existing.product.suggested_price,
+        discount: existing.usePackPrice ? packPriceDiscount(existing.product, quantity) : "0.00",
       };
       return current.map((line, index) => (index === existingIndex ? updated : line));
     });
