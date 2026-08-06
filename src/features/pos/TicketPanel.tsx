@@ -14,6 +14,7 @@ export function TicketPanel({
   lines,
   onUpdateLine,
   onRemoveLine,
+  onToggleMovementType,
   processDate,
   customerId,
   onCustomerChange,
@@ -26,6 +27,7 @@ export function TicketPanel({
   lines: DraftLine[];
   onUpdateLine: (key: string, changes: Partial<DraftLine>) => void;
   onRemoveLine: (key: string) => void;
+  onToggleMovementType: (key: string) => void;
   processDate: string;
   customerId: number | null;
   onCustomerChange: (id: number) => void;
@@ -98,9 +100,7 @@ export function TicketPanel({
         <div className="flex flex-wrap items-center gap-2">
           <button
             type="button"
-            onClick={() =>
-              onUpdateLine(line.key, { movementType: line.movementType === "SALE" ? "GIFT" : "SALE" })
-            }
+            onClick={() => onToggleMovementType(line.key)}
             className={`rounded border px-2 py-1 text-xs font-medium ${
               line.movementType === "SALE"
                 ? "border-ruby-700 bg-ruby-900 text-blush-100"

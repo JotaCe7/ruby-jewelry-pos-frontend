@@ -8,6 +8,7 @@ import { discardDraft, fetchDraft, fetchRegisterStatus, finalizeDraft, saveDraft
 import type {
   DraftSaleLineEntry,
   DraftSaleLineWritePayload,
+  MovementType,
   ProductEntry,
   SaleEntry,
 } from "../../api/types";
@@ -269,6 +270,45 @@ export function PosPage() {
     setLines((current) => current.filter((line) => line.key !== key));
   }
 
+  // Sale lines for a product already merge into one via the browse
+  // tile's own +/- (see isDefaultLine/addProduct above). Flipping a line
+  // between Venta and Regalo needs the same treatment: a second line for
+  // the same product already carrying the new movement type would
+  // otherwise sit right next to the one just switched, and both would
+  // print as separate rows on the receipt.
+  function toggleMovementType(key: string) {
+    setLines((current) => {
+      const line = current.find((l) => l.key === key);
+      if (!line) return current;
+      const newType: MovementType = line.movementType === "SALE" ? "GIFT" : "SALE";
+
+      const target = line.comboKey
+        ? undefined
+        : current.find(
+            (l) =>
+              l.key !== key &&
+              l.product.id === line.product.id &&
+              l.movementType === newType &&
+              l.comboKey === null,
+          );
+
+      if (!target) {
+        return current.map((l) => (l.key === key ? { ...l, movementType: newType } : l));
+      }
+
+      const quantity = target.quantity + line.quantity;
+      const unitPrice = target.useTierPrice
+        ? applicableUnitPrice(target.product, quantity)
+        : target.product.suggested_price;
+      const autoDiscount = target.usePackPrice ? Number(packPriceDiscount(target.product, quantity)) : 0;
+      const discount = combinedDiscount(autoDiscount, target.extraDiscount);
+
+      return current
+        .filter((l) => l.key !== key)
+        .map((l) => (l.key === target.key ? { ...l, quantity, unitPrice, discount } : l));
+    });
+  }
+
   function clearTicket() {
     if (lines.length === 0) return;
     if (!confirm(t("pos.confirmClearTicket"))) return;
@@ -360,6 +400,7 @@ export function PosPage() {
               lines={lines}
               onUpdateLine={updateLine}
               onRemoveLine={removeLine}
+              onToggleMovementType={toggleMovementType}
               processDate={registerStatus.process_date}
               customerId={customerId}
               onCustomerChange={setCustomerId}
