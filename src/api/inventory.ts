@@ -17,6 +17,14 @@ export const priceTiersApi = createCrudApi<
   PriceTierEntry,
   { product: number; min_quantity: number; unit_price: string }
 >("/inventory/price-tiers/");
+
+// Replaces (not merges) each target's tier set with the source's.
+export async function copyPriceTiers(sourceProductId: number, targetProductIds: number[]) {
+  await apiClient.post("/inventory/price-tiers/copy/", {
+    source_product: sourceProductId,
+    target_products: targetProductIds,
+  });
+}
 export const inventoryEntriesApi = createCrudApi<InventoryEntryEntry, InventoryEntryWritePayload>(
   "/inventory/entries/",
 );

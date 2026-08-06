@@ -46,7 +46,7 @@
     "colors": "Colores / Variantes",
     "presentations": "Presentaciones",
     "newEntryPlaceholder": "Nombre del nuevo registro",
-    "codePreviewHint": "Código que se asignará al guardar — nunca se puede editar después",
+    "codePreviewHint": "Código que se asignará al guardar, nunca se puede editar después",
     "selectCategory": "Selecciona categoría",
     "filterByCategory": "Filtrar por categoría:",
     "category": "Categoría",
@@ -113,7 +113,7 @@
     "generateLabels": "Generar etiquetas",
     "quantity": "Cantidad",
     "entryUnitCost": "Costo de este lote",
-    "entryUnitCostHint": "Opcional — actualiza el costo promedio",
+    "entryUnitCostHint": "Opcional, actualiza el costo promedio",
     "notes": "Notas",
     "theoreticalStock": "Stock Teórico",
     "physicalCount": "Conteo Físico",
@@ -124,7 +124,20 @@
     "damageResponsible": "Responsable",
     "damageResponsibleOther": "Otro",
     "damageReason": "Motivo",
-    "damageReasonPlaceholder": "Ej. se rompió mostrando al cliente"
+    "damageReasonPlaceholder": "Ej. se rompió mostrando al cliente",
+    "priceTiers": "Precios por mayor",
+    "priceTiersSaveFirst": "Guarda el producto primero para agregar precios por mayor",
+    "priceTierMinQuantity": "A partir de",
+    "priceTierUnitPrice": "Precio unitario",
+    "priceTierAddRow": "Agregar escalón",
+    "priceTierEmpty": "Este producto no tiene precios por mayor",
+    "priceTierDraftDiscardConfirm": "Tienes un precio por mayor sin agregar. ¿Deseas descartarlo y continuar?",
+    "copyPriceTiers": "Copiar precios por mayor",
+    "copyPriceTiersSource": "Copiar los precios de",
+    "copyPriceTiersTargetsCount": "a los {{count}} productos seleccionados",
+    "copyPriceTiersConfirm": "Esto reemplaza los precios por mayor que ya tengan los productos seleccionados. ¿Continuar?",
+    "copyPriceTiersNoTiers": "El producto de origen no tiene precios por mayor configurados",
+    "selectedCount": "{{count}} seleccionados"
   },
   "pos": {
     "modeFolder": "Por Categoría",
@@ -206,7 +219,7 @@
     "pinSection": "Mi PIN de autorización",
     "pinHint": "Cada administrador tiene su propio PIN. Al cerrar una caja, el sistema detecta cuál administrador autorizó según el PIN ingresado.",
     "pinSet": "Ya configuraste tu PIN.",
-    "pinNotSet": "Aún no has configurado tu PIN — no podrás autorizar cierres hasta hacerlo.",
+    "pinNotSet": "Aún no has configurado tu PIN, no podrás autorizar cierres hasta hacerlo.",
     "newPin": "Nuevo PIN",
     "setPin": "Guardar mi PIN",
     "forceOpenSection": "Corrección retroactiva",
@@ -263,7 +276,7 @@
     "voided": "ANULADO",
     "print": "Imprimir",
     "share": "Compartir por WhatsApp",
-    "shareUnsupported": "Este dispositivo no permite compartir directamente — se descargó la imagen del ticket, adjúntala manualmente."
+    "shareUnsupported": "Este dispositivo no permite compartir directamente, se descargó la imagen del ticket, adjúntala manualmente."
   },
   "users": {
     "title": "Usuarios",

@@ -16,6 +16,8 @@ import type { ProductEntry, ProductWritePayload } from "../../api/types";
 import { ImagePicker } from "../../components/ImagePicker";
 import { useUnsavedChanges } from "../../contexts/UnsavedChangesContext";
 import { BarcodeLabelModal } from "./BarcodeLabelModal";
+import { CopyPriceTiersModal } from "./CopyPriceTiersModal";
+import { PriceTiersEditor } from "./PriceTiersEditor";
 
 // min_stock is kept as a raw string while editing (like suggested_price
 // already is) and only coerced to a number at submit time. A
@@ -63,7 +65,23 @@ export function ProductsPage() {
   const [isCreating, setIsCreating] = useState(false);
   const [printingProduct, setPrintingProduct] = useState<ProductEntry | null>(null);
   const [saveError, setSaveError] = useState<string | null>(null);
+  const [selectedIds, setSelectedIds] = useState<number[]>([]);
+  const [showCopyModal, setShowCopyModal] = useState(false);
+  // Lifted out of PriceTiersEditor so Guardar/Cancelar can warn before
+  // silently discarding a typed-but-not-yet-added tier row.
+  const [tierDraftMinQuantity, setTierDraftMinQuantity] = useState("");
+  const [tierDraftUnitPrice, setTierDraftUnitPrice] = useState("");
   const { setDirty } = useUnsavedChanges();
+
+  function confirmDiscardTierDraft() {
+    if (!tierDraftMinQuantity && !tierDraftUnitPrice) return true;
+    return confirm(t("inventory.priceTierDraftDiscardConfirm"));
+  }
+
+  function resetTierDraft() {
+    setTierDraftMinQuantity("");
+    setTierDraftUnitPrice("");
+  }
 
   // Marks the whole app as having unsaved work for as long as this
   // panel is open. It's cleared on unmount too, so navigating away through
@@ -97,10 +115,18 @@ export function ProductsPage() {
         ? productsApi.update(editingId, finalPayload)
         : productsApi.create(finalPayload);
     },
-    onSuccess: () => {
-      setForm(emptyForm);
-      setIsCreating(false);
-      setEditingId(null);
+    onSuccess: (product) => {
+      if (editingId === null) {
+        // Just created: stay open in edit mode instead of closing, so
+        // price tiers can be added in the same flow without navigating
+        // back through the list to find it and click "Editar" again.
+        startEditing(product);
+      } else {
+        setForm(emptyForm);
+        setIsCreating(false);
+        setEditingId(null);
+        resetTierDraft();
+      }
       setSaveError(null);
       invalidate();
       queryClient.invalidateQueries({ queryKey: ["preview-product-code"] });
@@ -134,6 +160,7 @@ export function ProductsPage() {
     setEditingId(product.id);
     setIsCreating(true);
     setSaveError(null);
+    resetTierDraft();
     setForm({
       barcode: product.barcode,
       base_model: product.base_model,
@@ -161,6 +188,7 @@ export function ProductsPage() {
               setForm(emptyForm);
               setEditingId(null);
               setSaveError(null);
+              resetTierDraft();
               setIsCreating(true);
             }}
           >
@@ -174,6 +202,7 @@ export function ProductsPage() {
           className="mb-6 grid max-w-4xl grid-cols-2 gap-3 rounded border border-ruby-800 bg-ruby-900/50 p-4 sm:grid-cols-4"
           onSubmit={(event) => {
             event.preventDefault();
+            if (!confirmDiscardTierDraft()) return;
             saveMutation.mutate();
           }}
         >
@@ -339,6 +368,20 @@ export function ProductsPage() {
             />
           </div>
 
+          <div className="col-span-2 sm:col-span-4">
+            {editingId ? (
+              <PriceTiersEditor
+                productId={editingId}
+                draftMinQuantity={tierDraftMinQuantity}
+                draftUnitPrice={tierDraftUnitPrice}
+                onDraftMinQuantityChange={setTierDraftMinQuantity}
+                onDraftUnitPriceChange={setTierDraftUnitPrice}
+              />
+            ) : (
+              <p className="text-xs text-blush-100/50">{t("inventory.priceTiersSaveFirst")}</p>
+            )}
+          </div>
+
           {saveError && (
             <p className="col-span-2 text-sm text-red-400 sm:col-span-4">{saveError}</p>
           )}
@@ -355,15 +398,33 @@ export function ProductsPage() {
               type="button"
               className="text-sm text-blush-100/60"
               onClick={() => {
+                if (!confirmDiscardTierDraft()) return;
                 setIsCreating(false);
                 setEditingId(null);
                 setSaveError(null);
+                resetTierDraft();
               }}
             >
               {t("common.cancel")}
             </button>
           </div>
         </form>
+      )}
+
+      {selectedIds.length > 0 && (
+        <div className="mb-3 flex items-center gap-3 rounded border border-ruby-800 bg-ruby-900/50 px-3 py-2">
+          <p className="text-sm text-blush-100/70">{t("inventory.selectedCount", { count: selectedIds.length })}</p>
+          <button
+            type="button"
+            className="rounded bg-ruby-600 px-3 py-1 text-sm font-medium text-blush-100 hover:bg-ruby-500"
+            onClick={() => setShowCopyModal(true)}
+          >
+            {t("inventory.copyPriceTiers")}
+          </button>
+          <button type="button" className="text-sm text-blush-100/60" onClick={() => setSelectedIds([])}>
+            {t("common.cancel")}
+          </button>
+        </div>
       )}
 
       {isLoading ? (
@@ -373,6 +434,13 @@ export function ProductsPage() {
           <table className="w-full min-w-[860px] text-left text-sm">
             <thead>
               <tr className="text-blush-100/60">
+                <th className="w-8 py-1">
+                  <input
+                    type="checkbox"
+                    checked={!!products?.length && selectedIds.length === products.length}
+                    onChange={(event) => setSelectedIds(event.target.checked ? (products?.map((p) => p.id) ?? []) : [])}
+                  />
+                </th>
                 <th className="py-1"></th>
                 <th className="py-1">{t("inventory.code")}</th>
                 <th className="py-1">{t("inventory.baseModel")}</th>
@@ -387,6 +455,19 @@ export function ProductsPage() {
             <tbody>
               {products?.map((product) => (
                 <tr key={product.id} className="border-b border-ruby-800">
+                  <td className="py-2">
+                    <input
+                      type="checkbox"
+                      checked={selectedIds.includes(product.id)}
+                      onChange={(event) =>
+                        setSelectedIds(
+                          event.target.checked
+                            ? [...selectedIds, product.id]
+                            : selectedIds.filter((id) => id !== product.id),
+                        )
+                      }
+                    />
+                  </td>
                   <td className="w-14 py-2">
                     <ImagePicker
                       imageUrl={product.image}
@@ -436,6 +517,17 @@ export function ProductsPage() {
 
       {printingProduct && (
         <BarcodeLabelModal product={printingProduct} onClose={() => setPrintingProduct(null)} />
+      )}
+
+      {showCopyModal && products && (
+        <CopyPriceTiersModal
+          targetProductIds={selectedIds}
+          products={products}
+          onClose={() => {
+            setShowCopyModal(false);
+            setSelectedIds([]);
+          }}
+        />
       )}
     </section>
   );
