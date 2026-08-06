@@ -8,7 +8,7 @@ import { computeProration } from "./comboMath";
 import { LineDiscountInput } from "./LineDiscountInput";
 import { LineQuantityInput } from "./LineQuantityInput";
 import type { DraftLine } from "./types";
-import { applicableUnitPrice, packPriceDiscount } from "./types";
+import { applicableUnitPrice, combinedDiscount, packPriceDiscount } from "./types";
 
 export function TicketPanel({
   lines,
@@ -82,6 +82,7 @@ export function TicketPanel({
     const applicableTier = line.product.price_tiers
       .filter((tier) => tier.min_quantity <= line.quantity)
       .sort((a, b) => b.min_quantity - a.min_quantity)[0];
+    const packAutoDiscount = line.usePackPrice ? Number(packPriceDiscount(line.product, line.quantity)) : 0;
 
     return (
       <div key={line.key} className="border-b border-ruby-800 py-2">
@@ -117,8 +118,11 @@ export function TicketPanel({
                 ? applicableUnitPrice(line.product, quantity)
                 : line.product.suggested_price;
               const changes: Partial<DraftLine> = { quantity, unitPrice };
-              if (line.usePackPrice && !line.comboKey) {
-                changes.discount = packPriceDiscount(line.product, quantity);
+              if (!line.comboKey) {
+                const autoDiscount = line.usePackPrice
+                  ? Number(packPriceDiscount(line.product, quantity))
+                  : 0;
+                changes.discount = combinedDiscount(autoDiscount, line.extraDiscount);
               }
               onUpdateLine(line.key, changes);
             }}
@@ -145,14 +149,15 @@ export function TicketPanel({
                       // both would discount the pack's savings against the
                       // flat price while the line is already charging the
                       // tier's lower price, undercutting either promotion
-                      // applied on its own.
+                      // applied on its own. The seller's own extra discount
+                      // (if any) survives the switch either way.
                       onUpdateLine(line.key, {
                         useTierPrice,
                         unitPrice: useTierPrice
                           ? applicableUnitPrice(line.product, line.quantity)
                           : line.product.suggested_price,
                         usePackPrice: useTierPrice ? false : line.usePackPrice,
-                        discount: useTierPrice ? "0.00" : line.discount,
+                        discount: useTierPrice ? combinedDiscount(0, line.extraDiscount) : line.discount,
                       });
                     }}
                   />
@@ -169,9 +174,12 @@ export function TicketPanel({
                       const usePackPrice = event.target.checked;
                       // Mutually exclusive with the wholesale tier; see the
                       // tier checkbox's own handler for why.
+                      const autoDiscount = usePackPrice
+                        ? Number(packPriceDiscount(line.product, line.quantity))
+                        : 0;
                       onUpdateLine(line.key, {
                         usePackPrice,
-                        discount: usePackPrice ? packPriceDiscount(line.product, line.quantity) : "0.00",
+                        discount: combinedDiscount(autoDiscount, line.extraDiscount),
                         useTierPrice: usePackPrice ? false : line.useTierPrice,
                         unitPrice: usePackPrice ? line.product.suggested_price : line.unitPrice,
                       });
@@ -181,15 +189,25 @@ export function TicketPanel({
                     quantity: line.product.pack_price.pack_quantity,
                     price: line.product.pack_price.pack_price,
                   })}
+                  {line.usePackPrice && (
+                    <span className="text-blush-100/50">
+                      ({t("pos.packSavings", { amount: packAutoDiscount.toFixed(2) })})
+                    </span>
+                  )}
                 </label>
               )}
 
               {!line.comboKey ? (
                 <LineDiscountInput
-                  discount={line.discount}
+                  discount={line.extraDiscount}
                   className={`${fieldClass} w-20`}
-                  placeholder={t("pos.discount")}
-                  onChange={(discount) => onUpdateLine(line.key, { discount })}
+                  placeholder={line.usePackPrice ? t("pos.extraDiscount") : t("pos.discount")}
+                  onChange={(extraDiscount) =>
+                    onUpdateLine(line.key, {
+                      extraDiscount,
+                      discount: combinedDiscount(packAutoDiscount, extraDiscount),
+                    })
+                  }
                 />
               ) : (
                 <span className="text-xs text-blush-100/60">{t("pos.inCombo")}</span>

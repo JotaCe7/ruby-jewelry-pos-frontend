@@ -17,7 +17,7 @@ import { ProductBrowser } from "./ProductBrowser";
 import { RegisterGate } from "./RegisterGate";
 import { TicketPanel } from "./TicketPanel";
 import { TicketPrint } from "./TicketPrint";
-import { applicableUnitPrice, packPriceDiscount, type DraftLine } from "./types";
+import { applicableUnitPrice, combinedDiscount, packPriceDiscount, type DraftLine } from "./types";
 
 // The tier and pack checkboxes are mutually exclusive (stacking both would
 // discount the pack's savings against the flat price while the tier's
@@ -31,13 +31,22 @@ function defaultLineFlags(product: ProductEntry): Pick<DraftLine, "useTierPrice"
 }
 
 function lineFromServer(line: DraftSaleLineEntry): DraftLine {
+  const defaults = defaultLineFlags(line.product_detail);
+  const autoDiscount = defaults.usePackPrice
+    ? Number(packPriceDiscount(line.product_detail, line.quantity))
+    : 0;
+  // The backend only ever stores the combined total, so a reloaded draft
+  // can only guess at the split: whatever isn't explained by the pack
+  // formula is treated as the seller's own extra.
+  const extraDiscount = Math.max(0, Number(line.discount) - autoDiscount).toFixed(2);
   return {
     key: `line-${line.id}`,
     product: line.product_detail,
     movementType: line.movement_type,
     quantity: line.quantity,
     unitPrice: line.unit_price,
-    ...defaultLineFlags(line.product_detail),
+    ...defaults,
+    extraDiscount,
     discount: line.discount,
     comboKey: line.combo_key || null,
   };
@@ -172,11 +181,12 @@ export function PosPage() {
       if (existingIndex !== -1) {
         const existing = current[existingIndex];
         const quantity = existing.quantity + 1;
+        const autoDiscount = existing.usePackPrice ? Number(packPriceDiscount(product, quantity)) : 0;
         const updated = {
           ...existing,
           quantity,
           unitPrice: existing.useTierPrice ? applicableUnitPrice(product, quantity) : product.suggested_price,
-          discount: existing.usePackPrice ? packPriceDiscount(product, quantity) : "0.00",
+          discount: combinedDiscount(autoDiscount, existing.extraDiscount),
         };
         return current.map((line, index) => (index === existingIndex ? updated : line));
       }
@@ -190,6 +200,7 @@ export function PosPage() {
           quantity: 1,
           unitPrice: product.suggested_price,
           ...defaults,
+          extraDiscount: "0.00",
           discount: defaults.usePackPrice ? packPriceDiscount(product, 1) : "0.00",
           comboKey: null,
         },
@@ -206,13 +217,14 @@ export function PosPage() {
         return current.filter((_, index) => index !== existingIndex);
       }
       const quantity = existing.quantity - 1;
+      const autoDiscount = existing.usePackPrice ? Number(packPriceDiscount(existing.product, quantity)) : 0;
       const updated = {
         ...existing,
         quantity,
         unitPrice: existing.useTierPrice
           ? applicableUnitPrice(existing.product, quantity)
           : existing.product.suggested_price,
-        discount: existing.usePackPrice ? packPriceDiscount(existing.product, quantity) : "0.00",
+        discount: combinedDiscount(autoDiscount, existing.extraDiscount),
       };
       return current.map((line, index) => (index === existingIndex ? updated : line));
     });

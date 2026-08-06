@@ -8,6 +8,11 @@ export interface DraftLine {
   unitPrice: string;
   useTierPrice: boolean;
   usePackPrice: boolean;
+  // The seller-typed amount on top of whatever the pack promo already
+  // discounts automatically. `discount` (what's actually sent to the
+  // backend) is always this plus that auto amount, recomputed together
+  // so the seller only ever has to think about the extra part.
+  extraDiscount: string;
   discount: string;
   comboKey: string | null;
 }
@@ -50,4 +55,8 @@ export function packPriceDiscount(product: ProductEntry, quantity: number): stri
   if (fullPacks === 0) return "0.00";
   const savingsPerPack = pack.pack_quantity * Number(product.suggested_price) - Number(pack.pack_price);
   return Math.max(0, fullPacks * savingsPerPack).toFixed(2);
+}
+
+export function combinedDiscount(autoDiscount: number, extraDiscount: string): string {
+  return (autoDiscount + (Number(extraDiscount) || 0)).toFixed(2);
 }
