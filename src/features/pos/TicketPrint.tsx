@@ -19,7 +19,11 @@ export function TicketPrint({ sale, onClose }: { sale: SaleEntry; onClose: () =>
   // simpler, and a receipt image is all a customer needs over WhatsApp.
   async function handleShare() {
     if (!ticketRef.current) return;
-    const canvas = await html2canvas(ticketRef.current, { backgroundColor: "#ffffff" });
+    const canvas = await html2canvas(ticketRef.current, {
+      backgroundColor: "#ffffff",
+      width: ticketRef.current.scrollWidth,
+      height: ticketRef.current.scrollHeight,
+    });
     const blob: Blob | null = await new Promise((resolve) => canvas.toBlob(resolve, "image/png"));
     if (!blob) return;
     const fileName = `${document?.document_number || sale.id}.png`;
@@ -94,21 +98,23 @@ export function TicketPrint({ sale, onClose }: { sale: SaleEntry; onClose: () =>
             <table className="mb-2 w-full text-xs">
               <thead>
                 <tr className="border-b border-black text-left">
-                  <th className="py-1">{t("ticket.item")}</th>
-                  <th className="py-1 text-right">{t("ticket.qty")}</th>
+                  <th className="py-1 pr-2 text-right">{t("ticket.qty")}</th>
+                  <th className="py-1 pr-2">{t("ticket.item")}</th>
+                  <th className="py-1 pr-2 text-right">{t("ticket.unitPrice")}</th>
                   <th className="py-1 text-right">{t("ticket.amount")}</th>
                 </tr>
               </thead>
               <tbody>
                 {sale.line_items.map((line) => (
                   <tr key={line.id}>
-                    <td className="py-0.5">
+                    <td className="py-0.5 pr-2 text-right">{line.quantity}</td>
+                    <td className="py-0.5 pr-2">
                       {line.product_name}
                       {line.movement_type === "GIFT" && (
                         <span className="ml-1 text-[10px]">({t("pos.movementGift")})</span>
                       )}
                     </td>
-                    <td className="py-0.5 text-right">{line.quantity}</td>
+                    <td className="py-0.5 pr-2 text-right">S/ {line.unit_price_snapshot}</td>
                     <td className="py-0.5 text-right">S/ {line.final_price}</td>
                   </tr>
                 ))}
