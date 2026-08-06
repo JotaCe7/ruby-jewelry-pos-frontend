@@ -61,8 +61,8 @@ export function TicketPanel({
     return groups;
   }, [lines]);
 
-  const total = lines.reduce((sum, line) => {
-    if (line.movementType !== "SALE") return sum;
+  function lineFinalPrice(line: DraftLine): number {
+    if (line.movementType !== "SALE") return 0;
     const subtotal = Number(line.unitPrice) * line.quantity;
     let discount = Number(line.discount) || 0;
     if (line.comboKey) {
@@ -71,8 +71,10 @@ export function TicketPanel({
       const idx = group.findIndex((l) => l.key === line.key);
       discount = computeProration(weights, Number(group[0].discount) || 0)[idx];
     }
-    return sum + Math.max(subtotal - discount, 0);
-  }, 0);
+    return Math.max(subtotal - discount, 0);
+  }
+
+  const total = lines.reduce((sum, line) => sum + lineFinalPrice(line), 0);
 
   const fieldClass = "rounded border border-ruby-700 bg-ruby-900 px-2 py-1 text-sm text-blush-100";
 
@@ -192,6 +194,10 @@ export function TicketPanel({
               ) : (
                 <span className="text-xs text-blush-100/60">{t("pos.inCombo")}</span>
               )}
+
+              <span className="ml-auto text-sm font-semibold text-blush-100">
+                S/ {lineFinalPrice(line).toFixed(2)}
+              </span>
             </>
           )}
         </div>
