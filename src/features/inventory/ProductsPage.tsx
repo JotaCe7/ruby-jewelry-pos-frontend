@@ -449,7 +449,7 @@ export function ProductsPage() {
                 <th className="py-1 text-right">{t("inventory.unitCost")}</th>
                 <th className="py-1 text-right">{t("inventory.suggestedPrice")}</th>
                 <th className="py-1 text-right">{t("inventory.currentStock")}</th>
-                <th className="py-1 text-right">{t("common.actions")}</th>
+                <th className="py-1 pl-3">{t("common.actions")}</th>
               </tr>
             </thead>
             <tbody>
@@ -486,15 +486,15 @@ export function ProductsPage() {
                   <td className={`py-2 text-right ${product.needs_restock ? "font-semibold text-red-400" : ""}`}>
                     {product.current_stock}
                   </td>
-                  <td className="py-2 text-right whitespace-nowrap">
+                  <td className="py-2 pl-3 whitespace-nowrap">
                     <button
                       className="mr-3 text-blush-100/70 hover:text-blush-200"
                       onClick={() => setPrintingProduct(product)}
                     >
-                      {t("inventory.printLabels")}
+                      {t("inventory.printLabelsShort")}
                     </button>
                     <button
-                      className="mr-3 text-blush-100/70 hover:text-blush-200"
+                      className="mr-3 text-ruby-500 hover:text-blush-200"
                       onClick={() => startEditing(product)}
                     >
                       {t("common.edit")}

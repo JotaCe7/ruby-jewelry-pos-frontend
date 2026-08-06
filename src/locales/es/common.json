@@ -108,6 +108,7 @@
     "barcodeAutoHint": "Se genera automáticamente si lo dejas vacío",
     "saveError": "No se pudo guardar el producto",
     "printLabels": "Imprimir código de barras",
+    "printLabelsShort": "Impr. cód. barras",
     "labelQuantity": "Cantidad de etiquetas",
     "includeNameOnLabel": "Incluir nombre del producto en la etiqueta",
     "generateLabels": "Generar etiquetas",
