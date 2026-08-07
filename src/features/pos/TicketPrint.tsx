@@ -73,7 +73,7 @@ export function TicketPrint({ sale, onClose }: { sale: SaleEntry; onClose: () =>
                 <p className="text-4xl text-ruby-700" style={{ fontFamily: "'Yellowtail', cursive" }}>
                   Ruby
                 </p>
-                <img src={diamond} alt="" className="absolute -top-2 -right-3 h-5 w-auto" />
+                <img src={diamond} alt="" className="absolute -top-1 -right-4 h-5 w-auto" />
               </div>
               <p className="font-bold">{t("app.name")}</p>
               <p className="text-xs">
