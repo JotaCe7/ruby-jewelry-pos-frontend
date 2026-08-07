@@ -109,7 +109,7 @@ export function TicketPrint({ sale, onClose }: { sale: SaleEntry; onClose: () =>
             <table className="mb-2 w-full text-xs">
               <thead>
                 <tr className="border-b border-black text-left">
-                  <th className="py-1 pr-2 text-right">{t("ticket.qty")}</th>
+                  <th className="py-1 pr-2">{t("ticket.qty")}</th>
                   <th className="py-1 pr-2">{t("ticket.item")}</th>
                   <th className="py-1 pr-2 text-right">{t("ticket.unitPrice")}</th>
                   <th className="py-1 text-right">{t("ticket.amount")}</th>
@@ -118,7 +118,7 @@ export function TicketPrint({ sale, onClose }: { sale: SaleEntry; onClose: () =>
               <tbody>
                 {sale.line_items.map((line) => (
                   <tr key={line.id}>
-                    <td className="py-0.5 pr-2 text-right">{line.quantity}</td>
+                    <td className="py-0.5 pr-2">{line.quantity}</td>
                     <td className="py-0.5 pr-2">
                       {line.product_name}
                       {line.movement_type === "GIFT" && (
