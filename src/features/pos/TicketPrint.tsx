@@ -3,6 +3,7 @@ import { useRef } from "react";
 import { useTranslation } from "react-i18next";
 
 import type { SaleEntry } from "../../api/types";
+import diamond from "../../assets/diamond.png";
 import { business } from "../../config/business";
 
 // Rendered both right after finalizing a sale in POS and when reprinting
@@ -68,9 +69,12 @@ export function TicketPrint({ sale, onClose }: { sale: SaleEntry; onClose: () =>
             className="mx-auto w-full max-w-[80mm] bg-white p-2 text-black"
           >
             <div className="mb-2 text-center">
-              <p className="text-4xl text-ruby-700" style={{ fontFamily: "'Yellowtail', cursive" }}>
-                Ruby
-              </p>
+              <div className="relative inline-block">
+                <p className="text-4xl text-ruby-700" style={{ fontFamily: "'Yellowtail', cursive" }}>
+                  Ruby
+                </p>
+                <img src={diamond} alt="" className="absolute -top-2 -right-3 h-5 w-auto" />
+              </div>
               <p className="font-bold">{t("app.name")}</p>
               <p className="text-xs">
                 {t("ticket.ruc")} {business.ruc}
