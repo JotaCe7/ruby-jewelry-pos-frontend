@@ -171,7 +171,7 @@ export function ProductsPage() {
       barcode: product.barcode,
       base_model: product.base_model,
       subcategory: product.subcategory,
-      category: undefined,
+      category: product.category,
       color: product.color,
       presentation: product.presentation,
       supplier: product.supplier,

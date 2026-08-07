@@ -94,6 +94,7 @@ export interface ProductEntry {
   image: string | null;
   subcategory: number;
   subcategory_name: string;
+  category: number;
   category_name: string;
   color: number | null;
   color_name: string | null;
