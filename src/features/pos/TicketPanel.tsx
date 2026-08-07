@@ -8,12 +8,13 @@ import { computeProration } from "./comboMath";
 import { LineDiscountInput } from "./LineDiscountInput";
 import { LineQuantityInput } from "./LineQuantityInput";
 import type { DraftLine } from "./types";
-import { applicableUnitPrice } from "./types";
+import { applicableUnitPrice, combinedDiscount, packPriceDiscount } from "./types";
 
 export function TicketPanel({
   lines,
   onUpdateLine,
   onRemoveLine,
+  onToggleMovementType,
   processDate,
   customerId,
   onCustomerChange,
@@ -26,6 +27,7 @@ export function TicketPanel({
   lines: DraftLine[];
   onUpdateLine: (key: string, changes: Partial<DraftLine>) => void;
   onRemoveLine: (key: string) => void;
+  onToggleMovementType: (key: string) => void;
   processDate: string;
   customerId: number | null;
   onCustomerChange: (id: number) => void;
@@ -61,18 +63,25 @@ export function TicketPanel({
     return groups;
   }, [lines]);
 
-  const total = lines.reduce((sum, line) => {
-    if (line.movementType !== "SALE") return sum;
-    const subtotal = Number(line.unitPrice) * line.quantity;
-    let discount = Number(line.discount) || 0;
+  function lineDiscount(line: DraftLine): number {
+    if (line.movementType !== "SALE") return 0;
     if (line.comboKey) {
       const group = comboGroups[line.comboKey];
       const weights = group.map((l) => Number(l.unitPrice) * l.quantity);
       const idx = group.findIndex((l) => l.key === line.key);
-      discount = computeProration(weights, Number(group[0].discount) || 0)[idx];
+      return computeProration(weights, Number(group[0].discount) || 0)[idx];
     }
-    return sum + Math.max(subtotal - discount, 0);
-  }, 0);
+    return Number(line.discount) || 0;
+  }
+
+  function lineFinalPrice(line: DraftLine): number {
+    if (line.movementType !== "SALE") return 0;
+    const subtotal = Number(line.unitPrice) * line.quantity;
+    return Math.max(subtotal - lineDiscount(line), 0);
+  }
+
+  const total = lines.reduce((sum, line) => sum + lineFinalPrice(line), 0);
+  const totalDiscount = lines.reduce((sum, line) => sum + lineDiscount(line), 0);
 
   const fieldClass = "rounded border border-ruby-700 bg-ruby-900 px-2 py-1 text-sm text-blush-100";
 
@@ -80,6 +89,7 @@ export function TicketPanel({
     const applicableTier = line.product.price_tiers
       .filter((tier) => tier.min_quantity <= line.quantity)
       .sort((a, b) => b.min_quantity - a.min_quantity)[0];
+    const packAutoDiscount = line.usePackPrice ? Number(packPriceDiscount(line.product, line.quantity)) : 0;
 
     return (
       <div key={line.key} className="border-b border-ruby-800 py-2">
@@ -95,9 +105,7 @@ export function TicketPanel({
         <div className="flex flex-wrap items-center gap-2">
           <button
             type="button"
-            onClick={() =>
-              onUpdateLine(line.key, { movementType: line.movementType === "SALE" ? "GIFT" : "SALE" })
-            }
+            onClick={() => onToggleMovementType(line.key)}
             className={`rounded border px-2 py-1 text-xs font-medium ${
               line.movementType === "SALE"
                 ? "border-ruby-700 bg-ruby-900 text-blush-100"
@@ -114,7 +122,14 @@ export function TicketPanel({
               const unitPrice = line.useTierPrice
                 ? applicableUnitPrice(line.product, quantity)
                 : line.product.suggested_price;
-              onUpdateLine(line.key, { quantity, unitPrice });
+              const changes: Partial<DraftLine> = { quantity, unitPrice };
+              if (!line.comboKey) {
+                const autoDiscount = line.usePackPrice
+                  ? Number(packPriceDiscount(line.product, quantity))
+                  : 0;
+                changes.discount = combinedDiscount(autoDiscount, line.extraDiscount);
+              }
+              onUpdateLine(line.key, changes);
             }}
           />
 
@@ -135,11 +150,19 @@ export function TicketPanel({
                     checked={line.useTierPrice}
                     onChange={(event) => {
                       const useTierPrice = event.target.checked;
+                      // Mutually exclusive with the pack promo: stacking
+                      // both would discount the pack's savings against the
+                      // flat price while the line is already charging the
+                      // tier's lower price, undercutting either promotion
+                      // applied on its own. The seller's own extra discount
+                      // (if any) survives the switch either way.
                       onUpdateLine(line.key, {
                         useTierPrice,
                         unitPrice: useTierPrice
                           ? applicableUnitPrice(line.product, line.quantity)
                           : line.product.suggested_price,
+                        usePackPrice: useTierPrice ? false : line.usePackPrice,
+                        discount: useTierPrice ? combinedDiscount(0, line.extraDiscount) : line.discount,
                       });
                     }}
                   />
@@ -147,16 +170,57 @@ export function TicketPanel({
                 </label>
               )}
 
+              {line.product.pack_price && !line.comboKey && (
+                <label className="flex items-center gap-1 text-xs text-blush-100/70">
+                  <input
+                    type="checkbox"
+                    checked={line.usePackPrice}
+                    onChange={(event) => {
+                      const usePackPrice = event.target.checked;
+                      // Mutually exclusive with the wholesale tier; see the
+                      // tier checkbox's own handler for why.
+                      const autoDiscount = usePackPrice
+                        ? Number(packPriceDiscount(line.product, line.quantity))
+                        : 0;
+                      onUpdateLine(line.key, {
+                        usePackPrice,
+                        discount: combinedDiscount(autoDiscount, line.extraDiscount),
+                        useTierPrice: usePackPrice ? false : line.useTierPrice,
+                        unitPrice: usePackPrice ? line.product.suggested_price : line.unitPrice,
+                      });
+                    }}
+                  />
+                  {t("pos.packPrice", {
+                    quantity: line.product.pack_price.pack_quantity,
+                    price: line.product.pack_price.pack_price,
+                  })}
+                  {line.usePackPrice && (
+                    <span className="text-blush-100/50">
+                      ({t("pos.packSavings", { amount: packAutoDiscount.toFixed(2) })})
+                    </span>
+                  )}
+                </label>
+              )}
+
               {!line.comboKey ? (
                 <LineDiscountInput
-                  discount={line.discount}
+                  discount={line.extraDiscount}
                   className={`${fieldClass} w-20`}
-                  placeholder={t("pos.discount")}
-                  onChange={(discount) => onUpdateLine(line.key, { discount })}
+                  placeholder={line.usePackPrice ? t("pos.extraDiscount") : t("pos.discount")}
+                  onChange={(extraDiscount) =>
+                    onUpdateLine(line.key, {
+                      extraDiscount,
+                      discount: combinedDiscount(packAutoDiscount, extraDiscount),
+                    })
+                  }
                 />
               ) : (
                 <span className="text-xs text-blush-100/60">{t("pos.inCombo")}</span>
               )}
+
+              <span className="ml-auto text-sm font-semibold text-blush-100">
+                S/ {lineFinalPrice(line).toFixed(2)}
+              </span>
             </>
           )}
         </div>
@@ -234,6 +298,11 @@ export function TicketPanel({
       </div>
 
       <div className="mt-3 border-t border-ruby-800 pt-3">
+        {totalDiscount > 0 && (
+          <p className="text-right text-sm text-blush-100/70">
+            {t("pos.totalDiscount")}: S/ {totalDiscount.toFixed(2)}
+          </p>
+        )}
         <p className="mb-2 text-right text-lg font-semibold text-blush-200">
           {t("pos.total")}: S/ {total.toFixed(2)}
         </p>

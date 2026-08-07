@@ -16,11 +16,16 @@ export function LineDiscountInput({
   onChange: (discount: string) => void;
 }) {
   const [text, setText] = useState(isZero(discount) ? "" : discount);
-  const isEmpty = useRef(isZero(discount));
+  // Tracks whether the seller is actively typing here. The sync effect
+  // below only skips picking up an external discount change (e.g.
+  // checking the pack-promo checkbox, which can update a field that's
+  // been sitting empty since it was never touched) while a keystroke is
+  // still in progress (e.g. "0" on its way to "0.5"), never once focus
+  // has moved on.
+  const isFocused = useRef(false);
 
   useEffect(() => {
-    // Never clobber an intentionally-cleared field. See onChange below.
-    if (isEmpty.current) return;
+    if (isFocused.current) return;
     setText(isZero(discount) ? "" : discount);
   }, [discount]);
 
@@ -39,10 +44,15 @@ export function LineDiscountInput({
             ? digitsAndDot
             : digitsAndDot.slice(0, firstDot + 1) + digitsAndDot.slice(firstDot + 1).replace(/\./g, "");
         setText(sanitized);
-        isEmpty.current = sanitized === "";
         onChange(sanitized === "" ? "0.00" : sanitized);
       }}
-      onFocus={(event) => event.target.select()}
+      onFocus={(event) => {
+        isFocused.current = true;
+        event.target.select();
+      }}
+      onBlur={() => {
+        isFocused.current = false;
+      }}
     />
   );
 }

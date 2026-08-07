@@ -3,6 +3,8 @@ import { useRef } from "react";
 import { useTranslation } from "react-i18next";
 
 import type { SaleEntry } from "../../api/types";
+import diamond from "../../assets/diamond.png";
+import { business } from "../../config/business";
 
 // Rendered both right after finalizing a sale in POS and when reprinting
 // from the Ventas history. #print-ticket is the only thing visible when
@@ -19,7 +21,11 @@ export function TicketPrint({ sale, onClose }: { sale: SaleEntry; onClose: () =>
   // simpler, and a receipt image is all a customer needs over WhatsApp.
   async function handleShare() {
     if (!ticketRef.current) return;
-    const canvas = await html2canvas(ticketRef.current, { backgroundColor: "#ffffff" });
+    const canvas = await html2canvas(ticketRef.current, {
+      backgroundColor: "#ffffff",
+      width: ticketRef.current.scrollWidth,
+      height: ticketRef.current.scrollHeight,
+    });
     const blob: Blob | null = await new Promise((resolve) => canvas.toBlob(resolve, "image/png"));
     if (!blob) return;
     const fileName = `${document?.document_number || sale.id}.png`;
@@ -57,9 +63,26 @@ export function TicketPrint({ sale, onClose }: { sale: SaleEntry; onClose: () =>
         </div>
 
         <div className="overflow-y-auto p-4">
-          <div id="print-ticket" ref={ticketRef} className="mx-auto w-full max-w-[80mm] text-black">
+          <div
+            id="print-ticket"
+            ref={ticketRef}
+            className="mx-auto w-full max-w-[80mm] bg-white p-2 text-black"
+          >
             <div className="mb-2 text-center">
+              <div className="relative inline-block">
+                <p className="text-4xl text-ruby-700" style={{ fontFamily: "'Yellowtail', cursive" }}>
+                  Ruby
+                </p>
+                <img src={diamond} alt="" className="absolute -top-1 -right-4 h-5 w-auto" />
+              </div>
               <p className="font-bold">{t("app.name")}</p>
+              <p className="text-xs">
+                {t("ticket.ruc")} {business.ruc}
+              </p>
+              <p className="text-xs">{business.address}</p>
+              <p className="text-xs">
+                {t("ticket.phone")} {business.phone}
+              </p>
               {document && (
                 <>
                   <p>{document.document_type_display}</p>
@@ -90,21 +113,23 @@ export function TicketPrint({ sale, onClose }: { sale: SaleEntry; onClose: () =>
             <table className="mb-2 w-full text-xs">
               <thead>
                 <tr className="border-b border-black text-left">
-                  <th className="py-1">{t("ticket.item")}</th>
-                  <th className="py-1 text-right">{t("ticket.qty")}</th>
+                  <th className="py-1 pr-2">{t("ticket.qty")}</th>
+                  <th className="py-1 pr-2">{t("ticket.item")}</th>
+                  <th className="py-1 pr-2 text-right">{t("ticket.unitPrice")}</th>
                   <th className="py-1 text-right">{t("ticket.amount")}</th>
                 </tr>
               </thead>
               <tbody>
                 {sale.line_items.map((line) => (
                   <tr key={line.id}>
-                    <td className="py-0.5">
+                    <td className="py-0.5 pr-2">{line.quantity}</td>
+                    <td className="py-0.5 pr-2">
                       {line.product_name}
                       {line.movement_type === "GIFT" && (
                         <span className="ml-1 text-[10px]">({t("pos.movementGift")})</span>
                       )}
                     </td>
-                    <td className="py-0.5 text-right">{line.quantity}</td>
+                    <td className="py-0.5 pr-2 text-right">S/ {line.unit_price_snapshot}</td>
                     <td className="py-0.5 text-right">S/ {line.final_price}</td>
                   </tr>
                 ))}

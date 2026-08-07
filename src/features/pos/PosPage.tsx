@@ -8,6 +8,7 @@ import { discardDraft, fetchDraft, fetchRegisterStatus, finalizeDraft, saveDraft
 import type {
   DraftSaleLineEntry,
   DraftSaleLineWritePayload,
+  MovementType,
   ProductEntry,
   SaleEntry,
 } from "../../api/types";
@@ -17,16 +18,67 @@ import { ProductBrowser } from "./ProductBrowser";
 import { RegisterGate } from "./RegisterGate";
 import { TicketPanel } from "./TicketPanel";
 import { TicketPrint } from "./TicketPrint";
-import { applicableUnitPrice, type DraftLine } from "./types";
+import { applicableUnitPrice, combinedDiscount, packPriceDiscount, type DraftLine } from "./types";
+
+// The tier and pack checkboxes are mutually exclusive (stacking both would
+// discount the pack's savings against the flat price while the tier's
+// lower price is already active). A product with both configured defaults
+// to the tier, leaving the pack promo an explicit opt-in.
+function defaultLineFlags(product: ProductEntry): Pick<DraftLine, "useTierPrice" | "usePackPrice"> {
+  if (product.pack_price && product.price_tiers.length > 0) {
+    return { useTierPrice: true, usePackPrice: false };
+  }
+  return { useTierPrice: true, usePackPrice: true };
+}
+
+// The backend only ever stores the resulting unit_price/discount numbers,
+// never which checkbox produced them, so reconstructing a draft's
+// checkbox state means working backwards from those numbers rather than
+// the product's default combination. tierPrice/flatPrice diverging at
+// this quantity is what makes the tier's state readable from unit_price
+// at all; the pack's exact savings inside discount work the same way.
+// When neither number can tell the two states apart (e.g. the quantity
+// hasn't reached either threshold yet), the product's default is the
+// only reasonable answer.
+function inferLineFlags(
+  product: ProductEntry,
+  quantity: number,
+  unitPrice: string,
+  discount: string,
+): Pick<DraftLine, "useTierPrice" | "usePackPrice" | "extraDiscount"> {
+  const tierPrice = applicableUnitPrice(product, quantity);
+  const flatPrice = product.suggested_price;
+  const packAuto = Number(packPriceDiscount(product, quantity));
+
+  const tierDistinguishable = product.price_tiers.length > 0 && tierPrice !== flatPrice;
+  const packDistinguishable = !!product.pack_price && packAuto > 0;
+
+  let useTierPrice: boolean;
+  let usePackPrice: boolean;
+  if (tierDistinguishable) {
+    useTierPrice = unitPrice === tierPrice;
+    usePackPrice = !useTierPrice && packDistinguishable && Number(discount) >= packAuto;
+  } else if (packDistinguishable) {
+    useTierPrice = false;
+    usePackPrice = Number(discount) >= packAuto;
+  } else {
+    ({ useTierPrice, usePackPrice } = defaultLineFlags(product));
+  }
+
+  const autoDiscount = usePackPrice ? packAuto : 0;
+  const extraDiscount = Math.max(0, Number(discount) - autoDiscount).toFixed(2);
+  return { useTierPrice, usePackPrice, extraDiscount };
+}
 
 function lineFromServer(line: DraftSaleLineEntry): DraftLine {
+  const flags = inferLineFlags(line.product_detail, line.quantity, line.unit_price, line.discount);
   return {
     key: `line-${line.id}`,
     product: line.product_detail,
     movementType: line.movement_type,
     quantity: line.quantity,
     unitPrice: line.unit_price,
-    useTierPrice: true,
+    ...flags,
     discount: line.discount,
     comboKey: line.combo_key || null,
   };
@@ -45,17 +97,16 @@ function linesToPayload(lines: DraftLine[], paymentMethodId: number | null): Dra
   }));
 }
 
-// A line is only safe to bump/adjust from the product browser while it's
-// still in this untouched shape. A customized line (GIFT, combo, manual
-// discount) must only ever be edited from the ticket panel.
+// The one line the product browser's own +/- controls find and adjust for
+// a product: a plain SALE line outside any combo. GIFT and combo lines
+// are excluded since they represent a different intent (giving some
+// away, or a shared group discount) that only the ticket panel edits.
+// Which tier/pack checkbox is active, and any extra discount, don't
+// factor in here: the increment/decrement handlers recompute
+// unitPrice/discount from whatever useTierPrice/usePackPrice/
+// extraDiscount the line already carries, for any combination of them.
 function isDefaultLine(line: DraftLine, productId: number): boolean {
-  return (
-    line.product.id === productId &&
-    line.movementType === "SALE" &&
-    line.comboKey === null &&
-    line.discount === "0.00" &&
-    line.useTierPrice
-  );
+  return line.product.id === productId && line.movementType === "SALE" && line.comboKey === null;
 }
 
 export function PosPage() {
@@ -154,9 +205,16 @@ export function PosPage() {
       if (existingIndex !== -1) {
         const existing = current[existingIndex];
         const quantity = existing.quantity + 1;
-        const updated = { ...existing, quantity, unitPrice: applicableUnitPrice(product, quantity) };
+        const autoDiscount = existing.usePackPrice ? Number(packPriceDiscount(product, quantity)) : 0;
+        const updated = {
+          ...existing,
+          quantity,
+          unitPrice: existing.useTierPrice ? applicableUnitPrice(product, quantity) : product.suggested_price,
+          discount: combinedDiscount(autoDiscount, existing.extraDiscount),
+        };
         return current.map((line, index) => (index === existingIndex ? updated : line));
       }
+      const defaults = defaultLineFlags(product);
       return [
         ...current,
         {
@@ -165,8 +223,9 @@ export function PosPage() {
           movementType: "SALE",
           quantity: 1,
           unitPrice: product.suggested_price,
-          useTierPrice: true,
-          discount: "0.00",
+          ...defaults,
+          extraDiscount: "0.00",
+          discount: defaults.usePackPrice ? packPriceDiscount(product, 1) : "0.00",
           comboKey: null,
         },
       ];
@@ -182,7 +241,15 @@ export function PosPage() {
         return current.filter((_, index) => index !== existingIndex);
       }
       const quantity = existing.quantity - 1;
-      const updated = { ...existing, quantity, unitPrice: applicableUnitPrice(existing.product, quantity) };
+      const autoDiscount = existing.usePackPrice ? Number(packPriceDiscount(existing.product, quantity)) : 0;
+      const updated = {
+        ...existing,
+        quantity,
+        unitPrice: existing.useTierPrice
+          ? applicableUnitPrice(existing.product, quantity)
+          : existing.product.suggested_price,
+        discount: combinedDiscount(autoDiscount, existing.extraDiscount),
+      };
       return current.map((line, index) => (index === existingIndex ? updated : line));
     });
   }
@@ -201,6 +268,45 @@ export function PosPage() {
 
   function removeLine(key: string) {
     setLines((current) => current.filter((line) => line.key !== key));
+  }
+
+  // Sale lines for a product already merge into one via the browse
+  // tile's own +/- (see isDefaultLine/addProduct above). Flipping a line
+  // between Venta and Regalo needs the same treatment: a second line for
+  // the same product already carrying the new movement type would
+  // otherwise sit right next to the one just switched, and both would
+  // print as separate rows on the receipt.
+  function toggleMovementType(key: string) {
+    setLines((current) => {
+      const line = current.find((l) => l.key === key);
+      if (!line) return current;
+      const newType: MovementType = line.movementType === "SALE" ? "GIFT" : "SALE";
+
+      const target = line.comboKey
+        ? undefined
+        : current.find(
+            (l) =>
+              l.key !== key &&
+              l.product.id === line.product.id &&
+              l.movementType === newType &&
+              l.comboKey === null,
+          );
+
+      if (!target) {
+        return current.map((l) => (l.key === key ? { ...l, movementType: newType } : l));
+      }
+
+      const quantity = target.quantity + line.quantity;
+      const unitPrice = target.useTierPrice
+        ? applicableUnitPrice(target.product, quantity)
+        : target.product.suggested_price;
+      const autoDiscount = target.usePackPrice ? Number(packPriceDiscount(target.product, quantity)) : 0;
+      const discount = combinedDiscount(autoDiscount, target.extraDiscount);
+
+      return current
+        .filter((l) => l.key !== key)
+        .map((l) => (l.key === target.key ? { ...l, quantity, unitPrice, discount } : l));
+    });
   }
 
   function clearTicket() {
@@ -272,7 +378,10 @@ export function PosPage() {
 
         <div className="flex flex-col gap-4 md:flex-row">
           <div
-            className={`${activePanel === "browse" ? "block" : "hidden"} max-h-[75vh] flex-1 overflow-y-auto md:block`}
+            // pb-20 keeps the last row clear of the fixed cart button
+            // below on mobile. dvh sizes this against the area actually
+            // visible under the browser's own address/nav bars.
+            className={`${activePanel === "browse" ? "block" : "hidden"} max-h-[75dvh] flex-1 overflow-y-auto pb-20 md:block md:pb-0`}
           >
             <CartContext.Provider
               value={{
@@ -288,12 +397,19 @@ export function PosPage() {
             </CartContext.Provider>
           </div>
           <div
-            className={`${activePanel === "ticket" ? "block" : "hidden"} max-h-[75vh] md:block md:w-96 md:border-l md:border-ruby-800 md:pl-4`}
+            // overflow-y-auto makes this box actually scroll once its
+            // content exceeds max-height. pb-20 reserves blank space at
+            // the end of that scroll so the fixed "Seguir buscando"
+            // button below, which floats over this same bottom-right
+            // corner on mobile, never ends up covering Total/Registrar
+            // Venta once scrolled into view.
+            className={`${activePanel === "ticket" ? "block" : "hidden"} max-h-[75dvh] overflow-y-auto pb-20 md:block md:w-96 md:border-l md:border-ruby-800 md:pb-0 md:pl-4`}
           >
             <TicketPanel
               lines={lines}
               onUpdateLine={updateLine}
               onRemoveLine={removeLine}
+              onToggleMovementType={toggleMovementType}
               processDate={registerStatus.process_date}
               customerId={customerId}
               onCustomerChange={setCustomerId}

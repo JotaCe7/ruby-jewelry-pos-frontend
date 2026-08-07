@@ -79,6 +79,13 @@ export interface PriceTierEntry {
   unit_price: string;
 }
 
+export interface PackPriceEntry {
+  id: number;
+  product: number;
+  pack_quantity: number;
+  pack_price: string;
+}
+
 export interface ProductEntry {
   id: number;
   sku: string;
@@ -102,6 +109,7 @@ export interface ProductEntry {
   inventory_value: string;
   needs_restock: boolean;
   price_tiers: PriceTierEntry[];
+  pack_price: PackPriceEntry | null;
 }
 
 export interface ProductWritePayload {
