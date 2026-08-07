@@ -3,6 +3,7 @@ import { useRef } from "react";
 import { useTranslation } from "react-i18next";
 
 import type { SaleEntry } from "../../api/types";
+import { business } from "../../config/business";
 
 // Rendered both right after finalizing a sale in POS and when reprinting
 // from the Ventas history. #print-ticket is the only thing visible when
@@ -68,6 +69,13 @@ export function TicketPrint({ sale, onClose }: { sale: SaleEntry; onClose: () =>
           >
             <div className="mb-2 text-center">
               <p className="font-bold">{t("app.name")}</p>
+              <p className="text-xs">
+                {t("ticket.ruc")} {business.ruc}
+              </p>
+              <p className="text-xs">{business.address}</p>
+              <p className="text-xs">
+                {t("ticket.phone")} {business.phone}
+              </p>
               {document && (
                 <>
                   <p>{document.document_type_display}</p>

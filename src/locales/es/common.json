@@ -273,6 +273,8 @@
   },
   "ticket": {
     "title": "Comprobante",
+    "ruc": "RUC",
+    "phone": "Tel.",
     "seller": "Vendedor",
     "walkIn": "Público General",
     "item": "Producto",
