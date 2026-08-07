@@ -3,6 +3,7 @@ import { useRef } from "react";
 import { useTranslation } from "react-i18next";
 
 import type { SaleEntry } from "../../api/types";
+import logo from "../../assets/logo.png";
 import { business } from "../../config/business";
 
 // Rendered both right after finalizing a sale in POS and when reprinting
@@ -68,6 +69,7 @@ export function TicketPrint({ sale, onClose }: { sale: SaleEntry; onClose: () =>
             className="mx-auto w-full max-w-[80mm] bg-white p-2 text-black"
           >
             <div className="mb-2 text-center">
+              <img src={logo} alt="" className="mx-auto mb-1 h-16 w-16 rounded" />
               <p className="font-bold">{t("app.name")}</p>
               <p className="text-xs">
                 {t("ticket.ruc")} {business.ruc}
